@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>곽도현</title>
+<style>
+  :root {
+    --bg: #fbfaf8;
+    --fg: #1c1c1a;
+    --muted: #6b6b64;
+    --line: #dedad2;
+    --accent: #8a7a5c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161614;
+      --fg: #ece9e2;
+      --muted: #9a988f;
+      --line: #35342e;
+      --accent: #c4b48c;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+      "Pretendard", "Malgun Gothic", sans-serif;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+  main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 96px 24px 120px;
+  }
+  header {
+    margin-bottom: 88px;
+  }
+  h1 {
+    font-size: 2.1rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 0 0 10px;
+  }
+  .tagline {
+    font-size: 1.05rem;
+    color: var(--muted);
+    margin: 0;
+  }
+  section {
+    margin-bottom: 64px;
+  }
+  section:last-of-type {
+    margin-bottom: 0;
+  }
+  h2 {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 22px;
+  }
+  p {
+    margin: 0 0 14px;
+    font-size: 1rem;
+  }
+  .entry {
+    padding-bottom: 22px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid var(--line);
+  }
+  .entry:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  .entry-title {
+    font-weight: 600;
+    font-size: 1.02rem;
+  }
+  .entry-period {
+    color: var(--muted);
+    font-size: 0.86rem;
+    margin-top: 2px;
+  }
+  .entry ul {
+    margin: 12px 0 0;
+    padding-left: 20px;
+  }
+  .entry ul ul {
+    margin-top: 6px;
+  }
+  .entry li {
+    margin-bottom: 6px;
+    color: var(--fg);
+  }
+  .entry li::marker {
+    color: var(--muted);
+  }
+  .note {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+  .certs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .certs li {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .certs li:last-child {
+    border-bottom: none;
+  }
+  .certs .date {
+    color: var(--muted);
+    font-size: 0.86rem;
+    white-space: nowrap;
+  }
+  .links a {
+    color: var(--fg);
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent);
+  }
+  .links a:hover {
+    color: var(--accent);
+  }
+  footer {
+    margin-top: 100px;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <header>
+    <h1>곽도현</h1>
+    <p class="tagline">인생을 바칠 무언가를 찾고 있는 개발자</p>
+  </header>
+
+  <section id="about">
+    <h2>소개</h2>
+    <p>차분하고 신중한 편입니다.</p>
+    <p class="note">군 복무를 마치고, SKT ALEPH 국비교육을 통해 다시 공부를 시작했습니다.</p>
+  </section>
+
+  <section id="experience">
+    <h2>경험</h2>
+
+    <div class="entry">
+      <div class="entry-title">(주)큐피스트 — DevOps 엔지니어 (현장실습 및 수습)</div>
+      <div class="entry-period">2022.07.17 – 2023.02.28 (약 7개월)</div>
+      <ul>
+        <li>
+          프로젝트 ENFPY
+          <ul>
+            <li>Kubernetes manifest와 Helm Chart로 인프라를 코드로 작성 및 관리</li>
+            <li>GitHub Actions와 ArgoCD로 무중단 CI/CD 배포 파이프라인 구성</li>
+            <li>Datadog, CloudWatch, Sentry를 이용한 애플리케이션 모니터링 및 로그 파이프라인 구축</li>
+          </ul>
+        </li>
+        <li>그 외 AWS와 쿠버네티스 관련 인프라 서비스를 다룬 경험</li>
+      </ul>
+    </div>
+
+    <div class="entry">
+      <div class="entry-title">대덕소프트웨어마이스터고등학교</div>
+      <div class="entry-period">2020.03 – 2023.01</div>
+      <ul>
+        <li>백엔드 개발 공부</li>
+        <li>동아리 팀 프로젝트 진행</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="certs">
+    <h2>자격증</h2>
+    <ul class="certs">
+      <li><span>SQLD (SQL 개발자)</span><span class="date">2021.10</span></li>
+      <li><span>정보처리기능사</span><span class="date">2020.12</span></li>
+    </ul>
+  </section>
+
+  <section id="likes">
+    <h2>좋아하는 것</h2>
+    <p>독서, 애니메이션</p>
+  </section>
+
+  <section id="links" class="links">
+    <h2>링크</h2>
+    <p><a href="https://github.com/domathang" target="_blank" rel="noopener">github.com/domathang</a></p>
+  </section>
+
+  <footer>
+    이 페이지에 담긴 내용은 제가 직접 공개하기로 정한 것들입니다.
+  </footer>
+
+</main>
+</body>
+</html>
