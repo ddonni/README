@@ -1,0 +1,989 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>짤손</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@600;700&display=swap">
+<style>
+  :root{
+    --paper:#F7F3EC;
+    --paper-raised:#FFFFFF;
+    --ink:#1C1A17;
+    --ink-soft:#6B6459;
+    --seal:#C22E3A;
+    --seal-ink:#8F1F29;
+    --seal-tint:#F3DEDD;
+    --line:#DCD5C7;
+    --ok:#2F6F5E;
+    --ok-tint:#DCEAE5;
+    --warn:#8A5A15;
+    --warn-tint:#F1E3C9;
+    --radius:10px;
+    --font-display:'Noto Serif KR', serif;
+    --font-body:'IBM Plex Sans KR','Apple SD Gothic Neo',sans-serif;
+    --font-mono:'IBM Plex Mono', ui-monospace, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#17140F;
+      --paper-raised:#211D17;
+      --ink:#ECE6D9;
+      --ink-soft:#A79E8C;
+      --seal:#FF6E63;
+      --seal-ink:#FF8F86;
+      --seal-tint:#3A2220;
+      --line:#3B352A;
+      --ok:#6FC7B1;
+      --ok-tint:#1E3530;
+      --warn:#E4B65B;
+      --warn-tint:#3A2E14;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#17140F;
+    --paper-raised:#211D17;
+    --ink:#ECE6D9;
+    --ink-soft:#A79E8C;
+    --seal:#FF6E63;
+    --seal-ink:#FF8F86;
+    --seal-tint:#3A2220;
+    --line:#3B352A;
+    --ok:#6FC7B1;
+    --ok-tint:#1E3530;
+    --warn:#E4B65B;
+    --warn-tint:#3A2E14;
+    color-scheme: dark;
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; }
+  [hidden]{ display:none !important; }
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:15px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{ font-family:var(--font-display); margin:0; text-wrap:balance; }
+  button,input,textarea{ font-family:inherit; color:inherit; }
+  .mono{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+  *:focus-visible{ outline:2px solid var(--seal); outline-offset:2px; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
+
+  .skip-link{ position:absolute; left:-999px; top:auto; }
+  .skip-link:focus{ position:fixed; left:16px; top:16px; z-index:200; background:var(--seal); color:#fff; padding:8px 14px; border-radius:6px; }
+
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding:16px clamp(16px,4vw,32px);
+    background:var(--paper-raised);
+    border-bottom:1px solid var(--line);
+  }
+  .brand{ display:flex; align-items:center; gap:14px; min-width:0; }
+  .seal-mark{ flex:none; width:48px; height:48px; filter:drop-shadow(0 1px 0 rgba(0,0,0,0.08)); }
+  .brand-text h1{ font-size:22px; font-weight:700; letter-spacing:0.01em; }
+  .brand-text .tagline{ margin:2px 0 0; font-size:12.5px; color:var(--ink-soft); }
+  .topbar-note{ flex:none; font-family:var(--font-mono); font-size:11.5px; color:var(--ink-soft); border:1px solid var(--line); border-radius:999px; padding:5px 12px; white-space:nowrap; }
+  @media (max-width:640px){ .topbar-note{ display:none; } }
+
+  .layout{
+    display:grid; grid-template-columns:1fr; gap:20px;
+    padding:20px clamp(16px,4vw,32px) 40px;
+    max-width:1240px; margin:0 auto;
+  }
+  @media (min-width:900px){ .layout{ grid-template-columns:minmax(0,1fr) 360px; align-items:start; } }
+
+  .stage-panel{ display:flex; flex-direction:column; gap:12px; min-width:0; }
+
+  .ratio-tabs{ display:flex; gap:8px; }
+  .ratio-tab{
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;
+    padding:9px 8px; border-radius:var(--radius); border:1px solid var(--line);
+    background:var(--paper-raised); cursor:pointer; font-weight:600; font-size:14px;
+  }
+  .ratio-tab span{ font-weight:400; font-size:11px; color:var(--ink-soft); }
+  .ratio-tab.is-active{ border-color:var(--seal); background:var(--seal-tint); color:var(--seal-ink); }
+  .ratio-tab.is-active span{ color:var(--seal-ink); opacity:0.8; }
+
+  .canvas-frame{
+    position:relative; width:100%; margin:0 auto; max-width:520px;
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:14px;
+    padding:10px; box-shadow:0 1px 2px rgba(0,0,0,0.04);
+  }
+  .canvas-frame canvas{
+    display:block; width:100%; height:auto; border-radius:6px; touch-action:none; cursor:grab;
+    background:#111;
+  }
+  .canvas-frame.is-dragging canvas{ cursor:grabbing; }
+  .drag-hint{ text-align:center; font-size:12px; color:var(--ink-soft); margin:0; }
+
+  .dropzone{
+    display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center;
+    padding:22px 16px; border:1.5px dashed var(--line); border-radius:var(--radius);
+    cursor:pointer; background:var(--paper-raised);
+  }
+  .dropzone:hover, .dropzone.is-drag{ border-color:var(--seal); background:var(--seal-tint); }
+  .dropzone svg{ width:26px; height:26px; color:var(--ink-soft); }
+  .dropzone p{ margin:0; font-size:13.5px; }
+  .dropzone .hint{ color:var(--ink-soft); font-size:12px; font-family:var(--font-mono); }
+
+  .file-error{ margin:0; padding:10px 12px; border-radius:8px; background:var(--seal-tint); color:var(--seal-ink); font-size:13px; }
+
+  .toast{
+    position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
+    background:var(--ink); color:var(--paper); padding:10px 18px; border-radius:999px;
+    font-size:13px; z-index:100; box-shadow:0 4px 16px rgba(0,0,0,0.2);
+  }
+
+  .rail{ display:flex; flex-direction:column; gap:16px; min-width:0; }
+  .card{
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:12px;
+    padding:16px; display:flex; flex-direction:column; gap:12px;
+  }
+  .card h2{ display:flex; align-items:center; gap:9px; font-size:15px; font-weight:700; }
+  .tab-index{
+    font-family:var(--font-mono); font-size:11px; color:var(--seal); background:var(--seal-tint);
+    border-radius:5px; padding:2px 6px; letter-spacing:0.04em;
+  }
+  .card label{ font-size:12.5px; color:var(--ink-soft); display:block; margin-bottom:4px; }
+  textarea{
+    width:100%; resize:vertical; min-height:74px; padding:9px 10px; border-radius:8px;
+    border:1px solid var(--line); background:var(--paper); color:var(--ink); font-size:14px; line-height:1.45;
+  }
+  .control-row{ display:flex; align-items:center; gap:10px; }
+  .control-row label{ margin:0; flex:none; width:34px; }
+  .control-row input[type="range"]{ flex:1; accent-color:var(--seal); }
+  .control-row output{ flex:none; width:52px; text-align:right; font-size:12.5px; color:var(--ink-soft); }
+  input[type="color"]{ width:38px; height:30px; padding:0; border:1px solid var(--line); border-radius:6px; background:none; }
+  .row-label{ font-size:12.5px; color:var(--ink-soft); flex:none; width:34px; }
+  .segmented{ display:flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; flex:1; }
+  .segmented button{ flex:1; border:none; background:var(--paper-raised); padding:7px 0; font-size:12.5px; cursor:pointer; border-left:1px solid var(--line); }
+  .segmented button:first-child{ border-left:none; }
+  .segmented button.is-active{ background:var(--seal); color:#fff; }
+  .checkbox-row{ display:flex; align-items:center; gap:8px; font-size:13px; }
+  .checkbox-row input{ accent-color:var(--seal); }
+
+  .btn{ border-radius:8px; border:1px solid transparent; padding:9px 14px; font-size:13.5px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
+  .btn-outline{ background:var(--paper-raised); border-color:var(--line); color:var(--ink); }
+  .btn-outline:hover{ border-color:var(--seal); }
+  .btn-ghost{ background:transparent; border-color:transparent; color:var(--seal-ink); text-decoration:underline; padding:6px 4px; }
+  .btn-seal{ background:var(--seal); border-color:var(--seal); color:#fff; width:100%; padding:13px; font-size:15px; }
+  .btn-seal:hover{ background:var(--seal-ink); }
+  .btn-small{ padding:5px 9px; font-size:12px; }
+  .btn:disabled{ opacity:0.5; cursor:not-allowed; }
+
+  .template-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto; }
+  .template-list .empty-note{ font-size:12.5px; color:var(--ink-soft); padding:8px 2px; }
+  .template-item{ border:1px solid var(--line); border-radius:9px; padding:9px 10px; display:flex; align-items:center; gap:10px; }
+  .template-item.is-current{ border-color:var(--seal); background:var(--seal-tint); }
+  .template-thumb{ flex:none; width:36px; height:36px; border-radius:6px; background-size:cover; background-position:center; border:1px solid var(--line); background-color:var(--paper); }
+  .template-meta{ flex:1; min-width:0; }
+  .template-meta .t-name{ font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .template-meta .t-sub{ font-size:11px; color:var(--ink-soft); font-family:var(--font-mono); }
+  .template-actions{ flex:none; display:flex; gap:4px; }
+
+  .json-message{ margin:0; padding:9px 11px; border-radius:8px; font-size:12.5px; }
+  .json-message.is-ok{ background:var(--ok-tint); color:var(--ok); }
+  .json-message.is-error{ background:var(--seal-tint); color:var(--seal-ink); }
+
+  .foot{ max-width:1240px; margin:0 auto; padding:0 clamp(16px,4vw,32px) 32px; }
+  .foot p{ margin:0; font-size:12px; color:var(--ink-soft); }
+
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(20,17,12,0.45); display:flex; align-items:center; justify-content:center;
+    padding:20px; z-index:150;
+  }
+  .modal{ background:var(--paper-raised); border-radius:12px; padding:20px; width:100%; max-width:340px; display:flex; flex-direction:column; gap:12px; box-shadow:0 12px 32px rgba(0,0,0,0.25); }
+  .modal h3{ font-size:16px; }
+  .modal input[type="text"]{ padding:9px 10px; border-radius:8px; border:1px solid var(--line); background:var(--paper); color:var(--ink); font-size:14px; }
+  .modal-actions{ display:flex; justify-content:flex-end; gap:8px; }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#stage">본문으로 건너뛰기</a>
+
+<header class="topbar">
+  <div class="brand">
+    <svg class="seal-mark" viewBox="0 0 64 64" role="img" aria-label="짤손 로고">
+      <g transform="rotate(-7 32 32)">
+        <circle cx="32" cy="32" r="29" fill="var(--seal)" />
+        <circle cx="32" cy="32" r="29" fill="none" stroke="#fff" stroke-width="1.6" opacity="0.85" />
+        <text x="32" y="41" text-anchor="middle" font-family="'Noto Serif KR', serif" font-size="26" font-weight="700" fill="#fff">짤</text>
+      </g>
+    </svg>
+    <div class="brand-text">
+      <h1>짤손</h1>
+      <p class="tagline">이미지에 문구를 얹어 화면비 그대로 내려받는 편집기</p>
+    </div>
+  </div>
+  <div class="topbar-note mono">무로그인 · 브라우저 처리</div>
+</header>
+
+<main id="stage" class="layout">
+  <section class="stage-panel" aria-label="미리보기 영역">
+    <div class="ratio-tabs" role="tablist" aria-label="화면비 선택">
+      <button type="button" class="ratio-tab is-active" data-ratio="1:1" role="tab" aria-selected="true">1:1<span>정사각형</span></button>
+      <button type="button" class="ratio-tab" data-ratio="4:5" role="tab" aria-selected="false">4:5<span>세로 피드</span></button>
+      <button type="button" class="ratio-tab" data-ratio="9:16" role="tab" aria-selected="false">9:16<span>스토리</span></button>
+    </div>
+
+    <div class="canvas-frame" id="canvasFrame">
+      <canvas id="stageCanvas" width="1080" height="1080" aria-label="편집 캔버스 미리보기"></canvas>
+    </div>
+    <p class="drag-hint">문구를 캔버스에서 눌러 원하는 위치로 끌 수 있어요</p>
+
+    <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="이미지 올리기, 클릭하거나 파일을 끌어다 놓으세요">
+      <input type="file" id="fileInput" accept="image/png,image/jpeg" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M7 9l5-5 5 5"/><path d="M12 4v13"/></svg>
+      <p><strong>이미지를 끌어다 놓거나</strong> 클릭해서 선택하세요</p>
+      <p class="hint">PNG · JPEG</p>
+    </div>
+    <p class="file-error" id="fileError" role="alert" hidden></p>
+  </section>
+
+  <aside class="rail">
+    <section class="card">
+      <h2><span class="tab-index">01</span>문구</h2>
+      <div>
+        <label for="textInput">캡션 (줄바꿈 가능)</label>
+        <textarea id="textInput" rows="3" placeholder="예: 오늘 배포 또 늦어짐"></textarea>
+      </div>
+      <div class="control-row">
+        <label for="sizeInput">크기</label>
+        <input type="range" id="sizeInput" min="24" max="180" value="64">
+        <output id="sizeOutput" class="mono">64px</output>
+      </div>
+      <div class="control-row">
+        <label for="colorInput">색</label>
+        <input type="color" id="colorInput" value="#ffffff">
+        <output id="colorOutput" class="mono">#FFFFFF</output>
+      </div>
+      <div class="control-row">
+        <span class="row-label">정렬</span>
+        <div class="segmented" role="group" aria-label="문구 정렬">
+          <button type="button" data-align="left">왼쪽</button>
+          <button type="button" data-align="center" class="is-active">가운데</button>
+          <button type="button" data-align="right">오른쪽</button>
+        </div>
+      </div>
+      <label class="checkbox-row"><input type="checkbox" id="bgToggle" checked> 문구 뒤 배경 판 표시</label>
+    </section>
+
+    <section class="card">
+      <h2><span class="tab-index">02</span>템플릿</h2>
+      <div class="control-row">
+        <button type="button" id="saveTemplateBtn" class="btn btn-outline">현재 상태 저장</button>
+        <button type="button" id="updateTemplateBtn" class="btn btn-ghost" hidden>불러온 템플릿 갱신</button>
+      </div>
+      <ul class="template-list" id="templateList">
+        <li class="empty-note">아직 저장한 템플릿이 없습니다</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2><span class="tab-index">03</span>JSON</h2>
+      <div class="control-row">
+        <button type="button" id="exportJsonBtn" class="btn btn-outline">내보내기</button>
+        <button type="button" id="importJsonBtn" class="btn btn-outline">가져오기</button>
+        <input type="file" id="jsonInput" accept="application/json,.json" hidden>
+      </div>
+      <p class="json-message" id="jsonMessage" role="alert" hidden></p>
+    </section>
+
+    <button type="button" id="downloadBtn" class="btn btn-seal">PNG로 내려받기</button>
+  </aside>
+</main>
+
+<footer class="foot">
+  <p>모든 편집과 저장은 이 브라우저 안에서만 이루어지고 서버로 전송되지 않습니다. 내려받은 PNG는 새로 그려낸 이미지이므로 원본 파일의 위치정보 등 메타데이터를 포함하지 않습니다.</p>
+</footer>
+
+<div class="modal-backdrop" id="saveModalBackdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="saveModalTitle">
+    <h3 id="saveModalTitle">템플릿 이름</h3>
+    <input type="text" id="templateNameInput" maxlength="40" placeholder="예: 월요일 아침 짤">
+    <div class="modal-actions">
+      <button type="button" id="saveModalCancel" class="btn btn-ghost">취소</button>
+      <button type="button" id="saveModalConfirm" class="btn btn-seal" style="width:auto;padding:9px 16px;">저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var RATIOS = { "1:1":{w:1080,h:1080}, "4:5":{w:1080,h:1350}, "9:16":{w:1080,h:1920} };
+  var LS_KEY = "jjalson.templates.v1";
+
+  var state = {
+    ratio: "1:1",
+    image: null,
+    imageDataURL: null,
+    text: "예시 문구: 여기를 눌러 바꿔보세요",
+    x: 0.5,
+    y: 0.86,
+    size: 64,
+    color: "#ffffff",
+    align: "center",
+    bg: true,
+    _lastTextBox: null
+  };
+  var currentTemplateId = null;
+  var templates = [];
+
+  var canvas = document.getElementById("stageCanvas");
+  var ctx = canvas.getContext("2d");
+  var canvasFrame = document.getElementById("canvasFrame");
+  var dropzone = document.getElementById("dropzone");
+  var fileInput = document.getElementById("fileInput");
+  var fileError = document.getElementById("fileError");
+  var textInput = document.getElementById("textInput");
+  var sizeInput = document.getElementById("sizeInput");
+  var sizeOutput = document.getElementById("sizeOutput");
+  var colorInput = document.getElementById("colorInput");
+  var colorOutput = document.getElementById("colorOutput");
+  var bgToggle = document.getElementById("bgToggle");
+  var templateList = document.getElementById("templateList");
+  var saveTemplateBtn = document.getElementById("saveTemplateBtn");
+  var updateTemplateBtn = document.getElementById("updateTemplateBtn");
+  var exportJsonBtn = document.getElementById("exportJsonBtn");
+  var importJsonBtn = document.getElementById("importJsonBtn");
+  var jsonInput = document.getElementById("jsonInput");
+  var jsonMessage = document.getElementById("jsonMessage");
+  var downloadBtn = document.getElementById("downloadBtn");
+  var toast = document.getElementById("toast");
+  var saveModalBackdrop = document.getElementById("saveModalBackdrop");
+  var templateNameInput = document.getElementById("templateNameInput");
+  var saveModalCancel = document.getElementById("saveModalCancel");
+  var saveModalConfirm = document.getElementById("saveModalConfirm");
+
+  var toastTimer = null;
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.hidden = false;
+    if(toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.hidden = true; }, 2600);
+  }
+
+  var fileErrorTimer = null;
+  function showFileError(msg){
+    fileError.textContent = msg;
+    fileError.hidden = false;
+    if(fileErrorTimer) clearTimeout(fileErrorTimer);
+    fileErrorTimer = setTimeout(function(){ fileError.hidden = true; }, 6000);
+  }
+  function clearFileError(){ fileError.hidden = true; }
+
+  function showJsonMessage(msg, isError){
+    jsonMessage.textContent = msg;
+    jsonMessage.hidden = false;
+    jsonMessage.className = "json-message " + (isError ? "is-error" : "is-ok");
+  }
+
+  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+  function uid(){
+    if(window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
+    return "id-" + Date.now() + "-" + Math.random().toString(16).slice(2);
+  }
+
+  function graphemes(str){
+    try{
+      if(typeof Intl !== "undefined" && Intl.Segmenter){
+        var seg = new Intl.Segmenter("ko", { granularity: "grapheme" });
+        var out = [];
+        var it = seg.segment(str), iter = it[Symbol.iterator]();
+        var r = iter.next();
+        while(!r.done){ out.push(r.value.segment); r = iter.next(); }
+        return out;
+      }
+    }catch(e){}
+    return Array.from(str);
+  }
+
+  // ---------- rendering ----------
+  function fontString(size){
+    return "700 " + size + "px 'IBM Plex Sans KR','Apple SD Gothic Neo',sans-serif";
+  }
+
+  function drawCover(context, img, w, h){
+    var ir = img.width / img.height;
+    var cr = w / h;
+    var sx, sy, sw, sh;
+    if(ir > cr){
+      sh = img.height; sw = sh * cr; sx = (img.width - sw) / 2; sy = 0;
+    } else {
+      sw = img.width; sh = sw / cr; sx = 0; sy = (img.height - sh) / 2;
+    }
+    context.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+  }
+
+  function drawPlaceholder(context, w, h){
+    var grd = context.createLinearGradient(0, 0, w, h);
+    grd.addColorStop(0, "#2b2723");
+    grd.addColorStop(1, "#171512");
+    context.fillStyle = grd;
+    context.fillRect(0, 0, w, h);
+    context.strokeStyle = "rgba(255,255,255,0.18)";
+    context.lineWidth = Math.max(2, w * 0.003);
+    context.setLineDash([w * 0.02, w * 0.015]);
+    context.strokeRect(w * 0.06, h * 0.06, w * 0.88, h * 0.88);
+    context.setLineDash([]);
+    context.fillStyle = "rgba(255,255,255,0.55)";
+    context.textAlign = "center";
+    context.font = "500 " + Math.round(w * 0.032) + "px 'IBM Plex Sans KR',sans-serif";
+    context.fillText("이미지를 추가하세요", w / 2, h * 0.5);
+  }
+
+  function wrapLines(context, text, maxWidth){
+    var paragraphs = String(text).split("\n");
+    var lines = [];
+    for(var p = 0; p < paragraphs.length; p++){
+      var para = paragraphs[p];
+      if(para === ""){ lines.push(""); continue; }
+      var words = para.split(" ");
+      var current = "";
+      for(var w = 0; w < words.length; w++){
+        var word = words[w];
+        var candidate = current ? current + " " + word : word;
+        if(context.measureText(candidate).width <= maxWidth){
+          current = candidate;
+        } else {
+          if(current) lines.push(current);
+          if(context.measureText(word).width > maxWidth){
+            var gs = graphemes(word);
+            var chunk = "";
+            for(var g = 0; g < gs.length; g++){
+              var cand2 = chunk + gs[g];
+              if(context.measureText(cand2).width > maxWidth && chunk){
+                lines.push(chunk);
+                chunk = gs[g];
+              } else {
+                chunk = cand2;
+              }
+            }
+            current = chunk;
+          } else {
+            current = word;
+          }
+        }
+      }
+      lines.push(current);
+    }
+    return lines;
+  }
+
+  function roundRect(context, x, y, w, h, r){
+    context.beginPath();
+    context.moveTo(x + r, y);
+    context.arcTo(x + w, y, x + w, y + h, r);
+    context.arcTo(x + w, y + h, x, y + h, r);
+    context.arcTo(x, y + h, x, y, r);
+    context.arcTo(x, y, x + w, y, r);
+    context.closePath();
+  }
+
+  // Long captions at large sizes can otherwise overflow past the canvas edge
+  // (found via testing: T03-C15). Shrink toward a size that fits fully within
+  // the frame before drawing, so content is never silently clipped off-canvas.
+  var MIN_FIT_SIZE = 16;
+  function fitTextLayout(context, w, h){
+    var maxWidth = w * 0.86;
+    var size = state.size;
+    var lines, lineHeight, totalH;
+    while(true){
+      context.font = fontString(size);
+      lines = wrapLines(context, state.text, maxWidth);
+      lineHeight = size * 1.28;
+      totalH = lines.length * lineHeight;
+      if(totalH <= h * 0.92 || size <= MIN_FIT_SIZE) break;
+      size = Math.max(MIN_FIT_SIZE, size - 2);
+    }
+    return { size: size, lines: lines, lineHeight: lineHeight, totalH: totalH, maxWidth: maxWidth };
+  }
+
+  function drawText(context, w, h){
+    var fit = fitTextLayout(context, w, h);
+    var maxWidth = fit.maxWidth;
+    context.font = fontString(fit.size);
+    var lines = fit.lines;
+    var lineHeight = fit.lineHeight;
+    var totalH = fit.totalH;
+    var cx = state.x * w, cy = state.y * h;
+    var margin = h * 0.02;
+    cy = clamp(cy, totalH / 2 + margin, h - totalH / 2 - margin);
+    var startY = cy - totalH / 2 + lineHeight / 2;
+
+    var maxLineW = 0;
+    for(var i = 0; i < lines.length; i++){
+      maxLineW = Math.max(maxLineW, context.measureText(lines[i]).width);
+    }
+
+    if(state.bg){
+      var padX = state.size * 0.35, padY = state.size * 0.28;
+      var boxW = maxLineW + padX * 2, boxH = totalH + padY * 2;
+      context.fillStyle = "rgba(0,0,0,0.45)";
+      roundRect(context, cx - boxW / 2, cy - boxH / 2, boxW, boxH, Math.min(16, state.size * 0.2));
+      context.fill();
+      state._lastTextBox = { x: cx - boxW / 2, y: cy - boxH / 2, w: boxW, h: boxH };
+    } else {
+      state._lastTextBox = { x: cx - maxLineW / 2 - 10, y: cy - totalH / 2 - 10, w: maxLineW + 20, h: totalH + 20 };
+    }
+
+    context.fillStyle = state.color;
+    context.textAlign = state.align;
+    context.textBaseline = "middle";
+    var anchorX = cx;
+    if(state.align === "left") anchorX = cx - maxWidth / 2;
+    if(state.align === "right") anchorX = cx + maxWidth / 2;
+    for(var l = 0; l < lines.length; l++){
+      context.fillText(lines[l], anchorX, startY + l * lineHeight);
+    }
+  }
+
+  function render(){
+    var dim = RATIOS[state.ratio];
+    canvas.width = dim.w;
+    canvas.height = dim.h;
+    canvasFrame.style.aspectRatio = dim.w + " / " + dim.h;
+
+    if(state.image){
+      drawCover(ctx, state.image, dim.w, dim.h);
+    } else {
+      drawPlaceholder(ctx, dim.w, dim.h);
+    }
+    if(state.text && state.text.length > 0){
+      drawText(ctx, dim.w, dim.h);
+    } else {
+      state._lastTextBox = null;
+    }
+  }
+
+  // ---------- file handling ----------
+  function handleFile(file){
+    if(!file) return;
+    var validTypes = ["image/png", "image/jpeg"];
+    if(validTypes.indexOf(file.type) === -1){
+      showFileError('지원하지 않는 파일 형식입니다: "' + file.name + '" (' + (file.type || "알 수 없음") + "). PNG 또는 JPEG 파일만 가능합니다. 기존 작업은 유지됩니다.");
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var img = new Image();
+      img.onload = function(){
+        state.image = img;
+        state.imageDataURL = e.target.result;
+        clearFileError();
+        render();
+      };
+      img.onerror = function(){
+        showFileError('이미지를 불러오지 못했습니다: "' + file.name + '". 파일이 손상되었을 수 있습니다. 기존 작업은 유지됩니다.');
+      };
+      img.src = e.target.result;
+    };
+    reader.onerror = function(){
+      showFileError("파일을 읽는 중 오류가 발생했습니다. 기존 작업은 유지됩니다.");
+    };
+    reader.readAsDataURL(file);
+  }
+
+  dropzone.addEventListener("click", function(){ fileInput.click(); });
+  dropzone.addEventListener("keydown", function(e){
+    if(e.key === "Enter" || e.key === " "){ e.preventDefault(); fileInput.click(); }
+  });
+  fileInput.addEventListener("change", function(){
+    if(fileInput.files && fileInput.files[0]) handleFile(fileInput.files[0]);
+    fileInput.value = "";
+  });
+  ["dragenter","dragover"].forEach(function(evt){
+    dropzone.addEventListener(evt, function(e){ e.preventDefault(); dropzone.classList.add("is-drag"); });
+  });
+  ["dragleave","drop"].forEach(function(evt){
+    dropzone.addEventListener(evt, function(e){ e.preventDefault(); dropzone.classList.remove("is-drag"); });
+  });
+  dropzone.addEventListener("drop", function(e){
+    var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if(f) handleFile(f);
+  });
+
+  // ---------- controls ----------
+  document.querySelectorAll(".ratio-tab").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.querySelectorAll(".ratio-tab").forEach(function(b){ b.classList.remove("is-active"); b.setAttribute("aria-selected","false"); });
+      btn.classList.add("is-active");
+      btn.setAttribute("aria-selected","true");
+      state.ratio = btn.getAttribute("data-ratio");
+      render();
+    });
+  });
+
+  textInput.value = state.text;
+  textInput.addEventListener("input", function(){ state.text = textInput.value; render(); });
+
+  sizeInput.addEventListener("input", function(){
+    state.size = +sizeInput.value;
+    sizeOutput.textContent = state.size + "px";
+    render();
+  });
+
+  colorInput.addEventListener("input", function(){
+    state.color = colorInput.value;
+    colorOutput.textContent = colorInput.value.toUpperCase();
+    render();
+  });
+
+  document.querySelectorAll(".segmented [data-align]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.querySelectorAll(".segmented [data-align]").forEach(function(b){ b.classList.remove("is-active"); });
+      btn.classList.add("is-active");
+      state.align = btn.getAttribute("data-align");
+      render();
+    });
+  });
+
+  bgToggle.addEventListener("change", function(){ state.bg = bgToggle.checked; render(); });
+
+  // ---------- drag on canvas ----------
+  var dragging = false, dragOffset = { dx:0, dy:0 };
+  function getCanvasPoint(evt){
+    var rect = canvas.getBoundingClientRect();
+    var scaleX = canvas.width / rect.width;
+    var scaleY = canvas.height / rect.height;
+    return { x: (evt.clientX - rect.left) * scaleX, y: (evt.clientY - rect.top) * scaleY };
+  }
+  canvas.addEventListener("pointerdown", function(e){
+    var p = getCanvasPoint(e);
+    var box = state._lastTextBox;
+    if(box && p.x >= box.x && p.x <= box.x + box.w && p.y >= box.y && p.y <= box.y + box.h){
+      dragging = true;
+      dragOffset.dx = p.x - state.x * canvas.width;
+      dragOffset.dy = p.y - state.y * canvas.height;
+      canvas.setPointerCapture(e.pointerId);
+      canvasFrame.classList.add("is-dragging");
+    }
+  });
+  canvas.addEventListener("pointermove", function(e){
+    if(!dragging) return;
+    var p = getCanvasPoint(e);
+    state.x = clamp((p.x - dragOffset.dx) / canvas.width, 0.05, 0.95);
+    state.y = clamp((p.y - dragOffset.dy) / canvas.height, 0.05, 0.95);
+    render();
+  });
+  ["pointerup","pointercancel"].forEach(function(evt){
+    canvas.addEventListener(evt, function(){ dragging = false; canvasFrame.classList.remove("is-dragging"); });
+  });
+
+  // ---------- save-as-file (downloads capability with fallback) ----------
+  function saveFile(filename, data, mime){
+    return getDownloadsNS().then(function(downloads){
+      if(downloads){
+        var payload = data instanceof Blob ? data : new Blob([data], { type: mime || "application/octet-stream" });
+        return downloads.save({ filename: filename, data: payload }).then(function(res){
+          showToast(res.status === "saved" ? "저장했습니다" : "전달했습니다");
+        }).catch(function(err){
+          if(err && err.code === "declined"){ showToast("저장을 취소했습니다"); return; }
+          if(err && err.code === "rate_limited"){ showToast("잠시 후 다시 시도해주세요"); return; }
+          fallbackAnchor(filename, data, mime);
+        });
+      }
+      fallbackAnchor(filename, data, mime);
+    });
+  }
+  var downloadsNSPromise = null;
+  function getDownloadsNS(){
+    if(downloadsNSPromise) return downloadsNSPromise;
+    if(window.claude && typeof window.claude.use === "function"){
+      downloadsNSPromise = window.claude.use("downloads").catch(function(){ return null; });
+    } else {
+      downloadsNSPromise = Promise.resolve(null);
+    }
+    return downloadsNSPromise;
+  }
+  function fallbackAnchor(filename, data, mime){
+    try{
+      var blob = data instanceof Blob ? data : new Blob([data], { type: mime || "application/octet-stream" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+      showToast("저장했습니다");
+    }catch(err){
+      showToast("파일 저장에 실패했습니다");
+    }
+  }
+
+  downloadBtn.addEventListener("click", function(){
+    render();
+    canvas.toBlob(function(blob){
+      if(!blob){ showToast("이미지를 만들지 못했습니다"); return; }
+      var ts = new Date().toISOString().replace(/[:.]/g,"-");
+      saveFile("jjalson_" + state.ratio.replace(":","x") + "_" + ts + ".png", blob, "image/png");
+    }, "image/png");
+  });
+
+  // ---------- templates ----------
+  function loadTemplatesFromStorage(){
+    try{
+      var raw = localStorage.getItem(LS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+  function persistTemplates(){
+    try{
+      localStorage.setItem(LS_KEY, JSON.stringify(templates));
+      return true;
+    }catch(e){
+      showToast("저장 공간이 부족해 템플릿을 저장하지 못했습니다");
+      return false;
+    }
+  }
+
+  function shrinkImageDataURL(dataURL, maxDim, cb){
+    var img = new Image();
+    img.onload = function(){
+      var scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+      var w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+      var c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      var cctx = c.getContext("2d");
+      cctx.drawImage(img, 0, 0, w, h);
+      cb(c.toDataURL("image/jpeg", 0.82));
+    };
+    img.onerror = function(){ cb(null); };
+    img.src = dataURL;
+  }
+
+  function renderTemplateList(){
+    templateList.innerHTML = "";
+    if(templates.length === 0){
+      var li = document.createElement("li");
+      li.className = "empty-note";
+      li.textContent = "아직 저장한 템플릿이 없습니다";
+      templateList.appendChild(li);
+      return;
+    }
+    templates.slice().reverse().forEach(function(t){
+      var li = document.createElement("li");
+      li.className = "template-item" + (t.id === currentTemplateId ? " is-current" : "");
+
+      var thumb = document.createElement("div");
+      thumb.className = "template-thumb";
+      if(t.image) thumb.style.backgroundImage = "url(" + t.image + ")";
+
+      var meta = document.createElement("div");
+      meta.className = "template-meta";
+      var name = document.createElement("div");
+      name.className = "t-name";
+      name.textContent = t.name;
+      var sub = document.createElement("div");
+      sub.className = "t-sub";
+      var d = new Date(t.updatedAt || t.createdAt || Date.now());
+      sub.textContent = t.ratio + " · " + d.toLocaleDateString("ko-KR") + " " + d.toLocaleTimeString("ko-KR", {hour:"2-digit",minute:"2-digit"});
+      meta.appendChild(name); meta.appendChild(sub);
+
+      var actions = document.createElement("div");
+      actions.className = "template-actions";
+      var loadBtn = document.createElement("button");
+      loadBtn.type = "button"; loadBtn.className = "btn btn-outline btn-small"; loadBtn.textContent = "불러오기";
+      loadBtn.addEventListener("click", function(){ loadTemplate(t.id); });
+      var delBtn = document.createElement("button");
+      delBtn.type = "button"; delBtn.className = "btn btn-outline btn-small"; delBtn.textContent = "삭제";
+      delBtn.addEventListener("click", function(){ deleteTemplate(t.id); });
+      actions.appendChild(loadBtn); actions.appendChild(delBtn);
+
+      li.appendChild(thumb); li.appendChild(meta); li.appendChild(actions);
+      templateList.appendChild(li);
+    });
+  }
+
+  function loadTemplate(id){
+    var t = templates.filter(function(x){ return x.id === id; })[0];
+    if(!t) return;
+    currentTemplateId = id;
+    state.ratio = t.ratio; state.text = t.text; state.x = t.x; state.y = t.y;
+    state.size = t.size; state.color = t.color; state.align = t.align || "center";
+    state.bg = t.bg !== false;
+
+    textInput.value = state.text;
+    sizeInput.value = state.size; sizeOutput.textContent = state.size + "px";
+    colorInput.value = state.color; colorOutput.textContent = state.color.toUpperCase();
+    document.querySelectorAll(".segmented [data-align]").forEach(function(b){
+      b.classList.toggle("is-active", b.getAttribute("data-align") === state.align);
+    });
+    bgToggle.checked = state.bg;
+    document.querySelectorAll(".ratio-tab").forEach(function(b){
+      var on = b.getAttribute("data-ratio") === state.ratio;
+      b.classList.toggle("is-active", on);
+      b.setAttribute("aria-selected", on ? "true" : "false");
+    });
+
+    updateTemplateBtn.hidden = false;
+
+    if(t.image){
+      var img = new Image();
+      img.onload = function(){ state.image = img; state.imageDataURL = t.image; render(); renderTemplateList(); };
+      img.src = t.image;
+    } else {
+      state.image = null; state.imageDataURL = null;
+      render(); renderTemplateList();
+    }
+    showToast('"' + t.name + '" 템플릿을 불러왔습니다');
+  }
+
+  function deleteTemplate(id){
+    templates = templates.filter(function(t){ return t.id !== id; });
+    if(currentTemplateId === id){ currentTemplateId = null; updateTemplateBtn.hidden = true; }
+    persistTemplates();
+    renderTemplateList();
+    showToast("템플릿을 삭제했습니다");
+  }
+
+  function openSaveModal(){
+    templateNameInput.value = "";
+    saveModalBackdrop.hidden = false;
+    templateNameInput.focus();
+  }
+  function closeSaveModal(){ saveModalBackdrop.hidden = true; }
+
+  saveTemplateBtn.addEventListener("click", openSaveModal);
+  saveModalCancel.addEventListener("click", closeSaveModal);
+  saveModalBackdrop.addEventListener("click", function(e){ if(e.target === saveModalBackdrop) closeSaveModal(); });
+  templateNameInput.addEventListener("keydown", function(e){ if(e.key === "Enter") saveModalConfirm.click(); });
+
+  saveModalConfirm.addEventListener("click", function(){
+    var name = templateNameInput.value.trim();
+    if(!name){ templateNameInput.focus(); return; }
+    var finish = function(imageDataURL){
+      var t = {
+        id: uid(), name: name, ratio: state.ratio, text: state.text,
+        x: state.x, y: state.y, size: state.size, color: state.color,
+        align: state.align, bg: state.bg, image: imageDataURL || null,
+        createdAt: Date.now(), updatedAt: Date.now()
+      };
+      templates.push(t);
+      currentTemplateId = t.id;
+      persistTemplates();
+      renderTemplateList();
+      updateTemplateBtn.hidden = false;
+      closeSaveModal();
+      showToast('"' + name + '" 템플릿을 저장했습니다');
+    };
+    if(state.imageDataURL){ shrinkImageDataURL(state.imageDataURL, 900, finish); }
+    else { finish(null); }
+  });
+
+  updateTemplateBtn.addEventListener("click", function(){
+    var t = templates.filter(function(x){ return x.id === currentTemplateId; })[0];
+    if(!t) return;
+    var finish = function(imageDataURL){
+      t.ratio = state.ratio; t.text = state.text; t.x = state.x; t.y = state.y;
+      t.size = state.size; t.color = state.color; t.align = state.align; t.bg = state.bg;
+      t.image = imageDataURL || null; t.updatedAt = Date.now();
+      persistTemplates();
+      renderTemplateList();
+      showToast('"' + t.name + '" 템플릿을 갱신했습니다');
+    };
+    if(state.imageDataURL){ shrinkImageDataURL(state.imageDataURL, 900, finish); }
+    else { finish(null); }
+  });
+
+  // ---------- JSON export / import ----------
+  function validateTemplateShape(obj, idx){
+    if(!obj || typeof obj !== "object") return idx + "번째 항목이 객체가 아닙니다";
+    if(typeof obj.name !== "string" || !obj.name.trim()) return idx + "번째 항목에 이름(name)이 없습니다";
+    if(["1:1","4:5","9:16"].indexOf(obj.ratio) === -1) return idx + "번째 항목의 화면비(ratio)가 올바르지 않습니다";
+    if(typeof obj.x !== "number" || typeof obj.y !== "number") return idx + "번째 항목의 위치(x, y)가 숫자가 아닙니다";
+    if(typeof obj.size !== "number") return idx + "번째 항목의 크기(size)가 숫자가 아닙니다";
+    if(typeof obj.color !== "string") return idx + "번째 항목의 색(color)이 문자열이 아닙니다";
+    if(typeof obj.text !== "string") return idx + "번째 항목의 문구(text)가 문자열이 아닙니다";
+    return null;
+  }
+
+  exportJsonBtn.addEventListener("click", function(){
+    var json = JSON.stringify(templates, null, 2);
+    saveFile("jjalson_templates.json", json, "application/json");
+  });
+
+  importJsonBtn.addEventListener("click", function(){ jsonInput.click(); });
+  jsonInput.addEventListener("change", function(){
+    var file = jsonInput.files && jsonInput.files[0];
+    jsonInput.value = "";
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var parsed;
+      try{
+        parsed = JSON.parse(e.target.result);
+      }catch(err){
+        showJsonMessage("JSON 문법 오류로 가져오지 못했습니다. 기존 템플릿은 그대로 유지됩니다.", true);
+        return;
+      }
+      var list = Array.isArray(parsed) ? parsed : [parsed];
+      for(var i = 0; i < list.length; i++){
+        var reason = validateTemplateShape(list[i], i + 1);
+        if(reason){
+          showJsonMessage("가져오기 실패: " + reason + ". 기존 템플릿은 그대로 유지됩니다.", true);
+          return;
+        }
+      }
+      var added = 0;
+      list.forEach(function(item){
+        templates.push({
+          id: uid(), name: item.name, ratio: item.ratio, text: item.text,
+          x: item.x, y: item.y, size: item.size, color: item.color,
+          align: item.align || "center", bg: item.bg !== false,
+          image: item.image || null, createdAt: Date.now(), updatedAt: Date.now()
+        });
+        added++;
+      });
+      persistTemplates();
+      renderTemplateList();
+      showJsonMessage(added + "개 템플릿을 가져왔습니다.", false);
+    };
+    reader.onerror = function(){
+      showJsonMessage("파일을 읽지 못했습니다. 기존 템플릿은 그대로 유지됩니다.", true);
+    };
+    reader.readAsText(file);
+  });
+
+  // ---------- init ----------
+  templates = loadTemplatesFromStorage();
+  renderTemplateList();
+  render();
+
+  // Test-only introspection hook (no secrets, no PII — internal layout state only).
+  window.__jjalsonDebug = {
+    getState: function(){
+      return { ratio: state.ratio, text: state.text, x: state.x, y: state.y, size: state.size, color: state.color, align: state.align, bg: state.bg, hasImage: !!state.image };
+    },
+    getWrapInfo: function(){
+      var dim = RATIOS[state.ratio];
+      var c = document.createElement("canvas"); c.width = dim.w; c.height = dim.h;
+      var cx = c.getContext("2d");
+      var fit = fitTextLayout(cx, dim.w, dim.h);
+      var cy = state.y * dim.h;
+      var margin = dim.h * 0.02;
+      cy = clamp(cy, fit.totalH / 2 + margin, dim.h - fit.totalH / 2 - margin);
+      return {
+        lineCount: fit.lines.length, lineHeight: fit.lineHeight, totalH: fit.totalH,
+        effectiveSize: fit.size, requestedSize: state.size,
+        canvasW: dim.w, canvasH: dim.h,
+        topY: cy - fit.totalH / 2, bottomY: cy + fit.totalH / 2,
+        clippedTop: (cy - fit.totalH / 2) < -0.5, clippedBottom: (cy + fit.totalH / 2) > dim.h + 0.5
+      };
+    },
+    getCanvasDataURL: function(){ return canvas.toDataURL("image/png"); }
+  };
+})();
+</script>
+</body>
+</html>
