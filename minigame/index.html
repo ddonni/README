@@ -1,0 +1,1120 @@
+<title>스트릿볼 러시</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=Manrope:wght@500;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-0:#0d0f1a;
+    --bg-1:#161a2c;
+    --panel:#1c2138;
+    --panel-line:#343c5e;
+    --ink:#f2f0e8;
+    --muted:#8d93b8;
+    --accent:#ff6a2e;
+    --accent-dim:#c94f1f;
+    --light:#ffd580;
+    --court:#3a2e46;
+    --court-2:#2a2138;
+    --line:rgba(242,240,232,0.4);
+    --rim:#ff5522;
+    --board:#e9e7e0;
+    --net:#f2f0e8;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    background:
+      radial-gradient(ellipse 520px 360px at 18% -6%, rgba(255,213,128,0.16), transparent 60%),
+      radial-gradient(ellipse 520px 360px at 88% 0%, rgba(255,106,46,0.14), transparent 60%),
+      var(--bg-0);
+    color:var(--ink);
+    font-family:'Manrope', ui-sans-serif, system-ui, sans-serif;
+    display:flex;
+    justify-content:center;
+  }
+
+  .wrap{
+    width:100%;
+    max-width:440px;
+    padding-inline:16px;
+    padding-block:28px 36px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+
+  header{
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+
+  .eyebrow{
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.16em;
+    color:var(--accent);
+    text-transform:uppercase;
+  }
+
+  h1{
+    font-family:'Teko', ui-sans-serif, sans-serif;
+    font-weight:600;
+    font-size:clamp(34px,9vw,44px);
+    line-height:1;
+    margin:2px 0 0;
+    letter-spacing:.01em;
+    text-wrap:balance;
+    color:var(--ink);
+  }
+
+  .sub{
+    font-size:12.5px;
+    color:var(--muted);
+    font-weight:600;
+  }
+
+  .board{
+    display:flex;
+    gap:10px;
+  }
+
+  .stat{
+    flex:1;
+    background:linear-gradient(180deg,var(--panel),var(--bg-1));
+    border:1px solid var(--panel-line);
+    border-radius:12px;
+    padding:8px 12px 10px;
+    text-align:center;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+
+  .stat .label{
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.14em;
+    color:var(--muted);
+    text-transform:uppercase;
+  }
+
+  .stat .value{
+    font-family:'Teko', sans-serif;
+    font-weight:600;
+    font-size:38px;
+    line-height:1.05;
+    font-variant-numeric:tabular-nums;
+    color:var(--ink);
+  }
+
+  .stat.time .value{ color:var(--accent); }
+  .stat.time.low .value{ color:#ff3b3b; }
+
+  .court-frame{
+    position:relative;
+    border-radius:20px;
+    padding:3px;
+    background:linear-gradient(155deg, rgba(255,213,128,0.5), rgba(255,106,46,0.15) 40%, rgba(255,255,255,0.06));
+    box-shadow:0 18px 40px -18px rgba(0,0,0,0.7);
+  }
+
+  .court-inner{
+    position:relative;
+    border-radius:18px;
+    overflow:hidden;
+    background:var(--court);
+  }
+
+  canvas{
+    display:block;
+    width:100%;
+    height:auto;
+    touch-action:none;
+  }
+
+  /* Score effect: a brief flash over the court, only on a made basket.
+     Reduced-motion viewers never get this class added at all (see
+     triggerScoreEffect in the script), and this @media block is a second,
+     belt-and-suspenders guard in case a class was already mid-animation
+     when the preference changed. */
+  .score-flash{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:radial-gradient(circle, rgba(255,213,128,0.4), transparent 70%);
+    opacity:0;
+  }
+  .score-flash.active{ animation:scoreFlashPulse 0.4s ease-out; }
+  @keyframes scoreFlashPulse{
+    0%{ opacity:0.95; }
+    100%{ opacity:0; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .score-flash.active{ animation:none; opacity:0; }
+  }
+
+  .sound-btn{
+    position:absolute;
+    top:10px;
+    left:10px;
+    width:34px;
+    height:34px;
+    border:none;
+    border-radius:50%;
+    background:rgba(10,11,20,0.55);
+    color:var(--ink);
+    font-size:14px;
+    line-height:1;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    backdrop-filter:blur(2px);
+  }
+  .sound-btn:focus-visible{
+    outline:2px solid var(--light);
+    outline-offset:2px;
+  }
+
+  .overlay{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(10,11,20,0.72);
+    backdrop-filter:blur(2px);
+    text-align:center;
+    padding:24px;
+  }
+
+  .overlay[hidden]{ display:none; }
+
+  .card{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+    max-width:280px;
+  }
+
+  .card h2{
+    font-family:'Teko', sans-serif;
+    font-weight:600;
+    font-size:34px;
+    margin:0;
+    letter-spacing:.02em;
+  }
+
+  .card p{
+    margin:0;
+    font-size:13.5px;
+    line-height:1.55;
+    color:var(--muted);
+    font-weight:600;
+  }
+
+  .card .final{
+    font-family:'Teko', sans-serif;
+    font-weight:600;
+    font-size:64px;
+    line-height:1;
+    color:var(--accent);
+    font-variant-numeric:tabular-nums;
+  }
+
+  .card .hiscore{
+    font-size:12px;
+    font-weight:700;
+    color:var(--light);
+    letter-spacing:.04em;
+  }
+
+  button.primary{
+    appearance:none;
+    border:none;
+    cursor:pointer;
+    font-family:'Teko', sans-serif;
+    font-weight:600;
+    font-size:22px;
+    letter-spacing:.03em;
+    color:#1a0d05;
+    background:linear-gradient(180deg,#ffd580,var(--accent));
+    padding:10px 34px 12px;
+    border-radius:999px;
+    box-shadow:0 10px 24px -10px rgba(255,106,46,0.6);
+  }
+
+  button.primary:focus-visible{
+    outline:2px solid var(--light);
+    outline-offset:2px;
+  }
+
+  button.primary:active{ transform:translateY(1px); }
+
+  .pause-btn{
+    position:absolute;
+    top:10px;
+    right:10px;
+    width:34px;
+    height:34px;
+    border:none;
+    border-radius:50%;
+    background:rgba(10,11,20,0.55);
+    color:var(--ink);
+    font-size:13px;
+    line-height:1;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    backdrop-filter:blur(2px);
+  }
+
+  .pause-btn[hidden]{ display:none; }
+
+  .pause-btn:focus-visible{
+    outline:2px solid var(--light);
+    outline-offset:2px;
+  }
+
+  .result-badge{
+    font-size:13px;
+    font-weight:800;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    padding:4px 16px;
+    border-radius:999px;
+  }
+
+  .result-badge.pass{ background:rgba(141,214,168,0.18); color:#8dd6a8; }
+  .result-badge.fail{ background:rgba(255,90,64,0.18); color:#ff8a6b; }
+
+  .goal-note{
+    margin:-6px 0 0;
+    font-size:11.5px;
+    color:var(--muted);
+    font-weight:600;
+  }
+
+  /* The always-visible copy above the court, as opposed to the one inside
+     the game-over card above (same text, different context/margins). */
+  .goal-note.persistent{
+    margin:-6px 0 0;
+    text-align:center;
+  }
+
+  footer{
+    text-align:center;
+    font-size:12px;
+    color:var(--muted);
+    font-weight:600;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    * { animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">30-Second Shootaround</span>
+    <h1>스트릿볼 러시</h1>
+    <span class="sub">공을 당겼다 놓으면 슛! 30초 안에 최대한 많이 넣어보세요.</span>
+  </header>
+
+  <div class="board">
+    <div class="stat">
+      <div class="label">Score</div>
+      <div class="value" id="scoreVal">0</div>
+    </div>
+    <div class="stat time" id="timeStat">
+      <div class="label">Time</div>
+      <div class="value" id="timeVal">30</div>
+    </div>
+    <div class="stat">
+      <div class="label">Best</div>
+      <div class="value" id="hiscoreVal">0</div>
+    </div>
+  </div>
+
+  <p class="goal-note persistent" id="goalNotePersistent"></p>
+
+  <div class="court-frame">
+    <div class="court-inner">
+      <canvas id="game" width="400" height="640" aria-label="농구 미니게임 캔버스"></canvas>
+
+      <button class="pause-btn" id="pauseBtn" type="button" aria-label="일시정지" hidden>❚❚</button>
+
+      <button class="sound-btn" id="soundBtn" type="button" aria-label="효과음 끄기">🔊</button>
+
+      <div class="score-flash" id="scoreFlash" aria-hidden="true"></div>
+
+      <div class="overlay" id="startOverlay">
+        <div class="card">
+          <h2>슛 준비 완료?</h2>
+          <p>공을 클릭(또는 터치)한 채로 뒤로 당겼다가 놓으면, 당긴 반대 방향으로 슛이 날아가요. 많이 당길수록 더 멀리, 세게 날아갑니다.</p>
+          <button class="primary" id="startBtn" type="button">시작</button>
+        </div>
+      </div>
+
+      <div class="overlay" id="pauseOverlay" hidden>
+        <div class="card">
+          <h2>일시정지</h2>
+          <p>점수와 시간이 멈췄어요. 준비되면 이어하기를 눌러주세요.</p>
+          <button class="primary" id="resumeBtn" type="button">이어하기</button>
+        </div>
+      </div>
+
+      <div class="overlay" id="overOverlay" hidden>
+        <div class="card">
+          <h2>타임 업!</h2>
+          <div class="final" id="finalScore">0</div>
+          <div class="result-badge" id="resultBadge">성공</div>
+          <p class="goal-note" id="goalNoteOver"></p>
+          <div class="hiscore" id="hiscoreLine">최고 기록 0골</div>
+          <button class="primary" id="retryBtn" type="button">다시 하기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>공을 당겨서 파워와 방향을 조절하세요 — 놓으면 발사!</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var canvas = document.getElementById('game');
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+
+  var scoreEl = document.getElementById('scoreVal');
+  var timeEl = document.getElementById('timeVal');
+  var hiscoreValEl = document.getElementById('hiscoreVal');
+  var timeStat = document.getElementById('timeStat');
+  var startOverlay = document.getElementById('startOverlay');
+  var pauseOverlay = document.getElementById('pauseOverlay');
+  var overOverlay = document.getElementById('overOverlay');
+  var finalScoreEl = document.getElementById('finalScore');
+  var resultBadge = document.getElementById('resultBadge');
+  var hiscoreLine = document.getElementById('hiscoreLine');
+  var goalNoteOverEl = document.getElementById('goalNoteOver');
+  var goalNotePersistentEl = document.getElementById('goalNotePersistent');
+  var startBtn = document.getElementById('startBtn');
+  var resumeBtn = document.getElementById('resumeBtn');
+  var retryBtn = document.getElementById('retryBtn');
+  var pauseBtn = document.getElementById('pauseBtn');
+  var soundBtn = document.getElementById('soundBtn');
+  var scoreFlashEl = document.getElementById('scoreFlash');
+
+  // ---- constants ----
+  // Raised from 6 to 16 by direct request after playtesting the shipped
+  // game found 6 too easy (see PASS_SCORE_AB_결과.md for the original A/B
+  // data that set 6; this override reflects real play with the since-added
+  // bigger backboard and other changes, not a re-run of that test).
+  var PASS_SCORE = 16;
+  // Frontal hoop view: board + rim sit centered near the top, ball starts
+  // slightly off-center below so direction still matters. Tuned so a
+  // strong (~90%+) pull reliably reaches the rim, weaker pulls fall short.
+  var GRAVITY = 1500;           // px/s^2
+  var BALL_R = 27;               // deliberately close to the rim's own size -> a tight, precise window
+  // Ball sits around mid-screen rather than near the bottom edge, so a full
+  // power pull (MAX_DRAG) never has to drag the pointer off the canvas.
+  var START_X = 175, START_Y = 350;
+  var MAX_DRAG = 170;
+  var MIN_DRAG = 14;
+  var MAX_SPEED = 1080;          // re-tuned for the shorter start-to-rim distance above
+  var GAME_TIME = 30;
+
+  var RIM_CX = 200;
+  var RIM_Y = 118;
+  var RIM_RX = 46;
+  var POST_L = { x: RIM_CX - RIM_RX, y: RIM_Y, r: 8 };
+  var POST_R = { x: RIM_CX + RIM_RX, y: RIM_Y, r: 8 };
+  var BOARD_X0 = RIM_CX - 85, BOARD_X1 = RIM_CX + 85, BOARD_Y0 = 38, BOARD_Y1 = 98;
+
+  var HI_KEY = 'streetball_rush_hiscore';
+  var DEFAULT_HISCORE = 0;   // declared default whenever storage is empty or unreadable
+
+  var SOUND_KEY = 'streetball_rush_sound_on';
+  var DEFAULT_SOUND_ON = true;   // declared default whenever storage is empty or unreadable
+
+  // Single source of truth for the goal text, derived from PASS_SCORE
+  // itself (2 points per basket) so the always-visible copy above the
+  // court and the one on the game-over card can never drift out of sync
+  // with each other or with a future PASS_SCORE change.
+  var GOAL_TEXT = '목표: ' + PASS_SCORE + '점(' + (PASS_SCORE / 2) + '골) 이상';
+  goalNotePersistentEl.textContent = GOAL_TEXT;
+  goalNoteOverEl.textContent = GOAL_TEXT;
+
+  // ---- state ----
+  // Everything in this object is CURRENT-ROUND state: it lives only in
+  // memory, and freshState() is exactly the reset a new game needs —
+  // score, the clock, the ball, any drag/flight in progress, popups. None
+  // of it is written to storage, so there is nothing here to corrupt across
+  // a reload.
+  //
+  // The one PRESERVED record is hiscore, which is not part of this object's
+  // reset — it round-trips through localStorage via readHiscore()/
+  // writeHiscore() and is carried across every freshState() call by hand
+  // (see startGame()), so a new round never wipes it.
+  function freshState(){
+    return {
+      phase: 'idle',        // idle | playing | paused | over
+      score: 0,
+      timeLeft: GAME_TIME,
+      hiscore: readHiscore(),
+      ball: { x: START_X, y: START_Y, vx: 0, vy: 0 },
+      inFlight: false,
+      flightT: 0,
+      scoredThisFlight: false,
+      dragging: false,
+      dragPoint: null,
+      activePointerId: null,  // only this pointer drives the current drag — extra
+                               // pointerdown events (multi-touch, duplicate synthetic
+                               // input) are ignored rather than stomping on it
+      popups: [],   // {x,y,t,text,color}
+      netFlash: 0,
+      lastT: null
+    };
+  }
+
+  // Reads the one preserved record. Three ways this can go wrong, all
+  // handled the same way — fall back to DEFAULT_HISCORE and keep booting:
+  //   - empty (key never set): getItem returns null
+  //   - corrupted (non-numeric junk, "NaN", an object's toString, etc.):
+  //     parseInt yields NaN
+  //   - corrupted in a way that parses but is nonsensical (a negative
+  //     number — this game can't produce one): clamped back to the default
+  // storage being unavailable at all (disabled, quota, private mode) is
+  // caught outright so it never stops the game from loading.
+  function readHiscore(){
+    try {
+      var raw = localStorage.getItem(HI_KEY);
+      if (raw === null) return DEFAULT_HISCORE;
+      var v = parseInt(raw, 10);
+      if (isNaN(v) || v < 0) return DEFAULT_HISCORE;
+      return v;
+    } catch(e){ return DEFAULT_HISCORE; }
+  }
+  function writeHiscore(v){
+    try { localStorage.setItem(HI_KEY, String(v)); } catch(e){}
+  }
+
+  // Same corruption-proofing pattern as readHiscore(): only the exact
+  // strings this code itself ever writes ("0"/"1") are trusted; anything
+  // else unreadable (empty, corrupted junk, storage unavailable) falls back
+  // to the declared default instead of guessing what the value meant.
+  // This is a preserved PREFERENCE, not current-round state, so — like
+  // hiscore — it deliberately lives outside S and freshState() never
+  // touches it: a new game/retry never flips the player's sound choice.
+  function readSoundPref(){
+    try {
+      var raw = localStorage.getItem(SOUND_KEY);
+      if (raw === null) return DEFAULT_SOUND_ON;
+      if (raw === '0') return false;
+      if (raw === '1') return true;
+      return DEFAULT_SOUND_ON;
+    } catch(e){ return DEFAULT_SOUND_ON; }
+  }
+  function writeSoundPref(v){
+    try { localStorage.setItem(SOUND_KEY, v ? '1' : '0'); } catch(e){}
+  }
+
+  var soundOn = readSoundPref();
+
+  // Read live rather than cached once, so flipping the OS setting mid-round
+  // takes effect on the very next score instead of needing a reload.
+  function reducedMotionOn(){
+    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+
+  // Lazily created, and only ever touched from inside a user gesture (the
+  // sound-toggle click, or implicitly the pointerup that fires a shot) so
+  // it respects the browser's autoplay policy instead of starting blocked.
+  var audioCtx = null;
+  function getAudioCtx(){
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    } catch(e){ return null; }
+  }
+
+  // A short synthesized two-note chime — no external audio file, so there's
+  // nothing to fetch, cache, or ship as a binary asset alongside the page.
+  function playScoreChime(){
+    var ctxA = getAudioCtx();
+    if (!ctxA) return;
+    var now = ctxA.currentTime;
+    [660, 990].forEach(function(freq, i){
+      var osc = ctxA.createOscillator();
+      var gain = ctxA.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      var t0 = now + i * 0.08;
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(0.18, t0 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
+      osc.connect(gain);
+      gain.connect(ctxA.destination);
+      osc.start(t0);
+      osc.stop(t0 + 0.24);
+    });
+  }
+
+  // A short, low synthesized thud for a missed shot — a second, separate
+  // sound so a miss is audibly distinct from a made basket rather than
+  // reusing (or staying silent under) the score chime.
+  function playMissThud(){
+    var ctxA = getAudioCtx();
+    if (!ctxA) return;
+    var now = ctxA.currentTime;
+    var osc = ctxA.createOscillator();
+    var gain = ctxA.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(90, now + 0.15);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.14, now + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+    osc.connect(gain);
+    gain.connect(ctxA.destination);
+    osc.start(now);
+    osc.stop(now + 0.2);
+  }
+
+  // Tied to the miss event only (ball goes dead without having scored) —
+  // audio-only, no screen flash, so it isn't gated by reduced-motion, only
+  // by the same mute toggle as the score chime.
+  function triggerMissEffect(){
+    if (soundOn) playMissThud();
+  }
+
+  // The declared event the visual+chime effect is tied to: a made basket
+  // (T02-C26). Nothing else in the game calls this — not a miss (which has
+  // its own, separate audio-only effect above), not a rim/board collision,
+  // not pause/resume/retry — so the flash and chime only ever fire on a
+  // score, never on anything else.
+  //
+  // Both of ITS channels are gated independently (T02-C27): reduced motion
+  // drops the visual flash even if sound is on, muting drops the chime
+  // (and the miss thud) even if motion is fine, and flipping either
+  // mid-game changes the very next event's effect immediately since both
+  // are read live, not cached.
+  function triggerScoreEffect(){
+    // Always clear first: an earlier score may have left this class applied
+    // (nothing else removes it), so under reduced motion we actively drop
+    // it rather than relying only on the CSS @media guard to zero it out.
+    scoreFlashEl.classList.remove('active');
+    if (!reducedMotionOn()){
+      void scoreFlashEl.offsetWidth; // force reflow so a rapid re-score restarts the animation
+      scoreFlashEl.classList.add('active');
+    }
+    if (soundOn) playScoreChime();
+  }
+
+  function syncSoundBtn(){
+    soundBtn.textContent = soundOn ? '🔊' : '🔇';
+    soundBtn.setAttribute('aria-label', soundOn ? '효과음 끄기' : '효과음 켜기');
+  }
+
+  var S = freshState();
+
+  // ---- input mapping ----
+  function toCanvasPoint(clientX, clientY){
+    var rect = canvas.getBoundingClientRect();
+    var scaleX = W / rect.width;
+    var scaleY = H / rect.height;
+    return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+  }
+
+  function dist(ax, ay, bx, by){
+    var dx = ax - bx, dy = ay - by;
+    return Math.sqrt(dx*dx + dy*dy);
+  }
+
+  // Only one pointer may drive a drag at a time. A second pointerdown while
+  // already dragging (a second finger, or a duplicate/synthetic event fired
+  // in a burst) is ignored outright, and move/up/cancel/leave all re-check
+  // the id before acting — so a flurry of repeated input events each affect
+  // state at most once, instead of racing each other into an inconsistent
+  // drag.
+  canvas.addEventListener('pointerdown', function(e){
+    if (S.phase !== 'playing' || S.inFlight || S.dragging) return;
+    var p = toCanvasPoint(e.clientX, e.clientY);
+    if (dist(p.x, p.y, S.ball.x, S.ball.y) <= 52){
+      S.dragging = true;
+      S.activePointerId = e.pointerId;
+      S.dragPoint = { x: p.x, y: p.y };
+      canvas.setPointerCapture(e.pointerId);
+    }
+  });
+
+  canvas.addEventListener('pointermove', function(e){
+    if (!S.dragging || e.pointerId !== S.activePointerId) return;
+    var p = toCanvasPoint(e.clientX, e.clientY);
+    var dx = p.x - S.ball.x, dy = p.y - S.ball.y;
+    var d = Math.sqrt(dx*dx + dy*dy);
+    if (d > MAX_DRAG){
+      dx = dx / d * MAX_DRAG;
+      dy = dy / d * MAX_DRAG;
+    }
+    S.dragPoint = { x: S.ball.x + dx, y: S.ball.y + dy };
+  });
+
+  function releaseDrag(e){
+    if (!S.dragging || (e && e.pointerId !== S.activePointerId)) return;
+    S.dragging = false;
+    S.activePointerId = null;
+    var dp = S.dragPoint;
+    S.dragPoint = null;
+    if (!dp) return;
+    var d = dist(dp.x, dp.y, S.ball.x, S.ball.y);
+    if (d < MIN_DRAG) return; // too small, ignore
+
+    var shootX = S.ball.x - dp.x;
+    var shootY = S.ball.y - dp.y;
+    var len = Math.sqrt(shootX*shootX + shootY*shootY) || 1;
+    var power = Math.min(d, MAX_DRAG) / MAX_DRAG;
+    var speed = power * MAX_SPEED;
+
+    S.ball.vx = (shootX / len) * speed;
+    S.ball.vy = (shootY / len) * speed;
+    S.inFlight = true;
+    S.flightT = 0;
+    S.scoredThisFlight = false;
+  }
+
+  canvas.addEventListener('pointerup', releaseDrag);
+  canvas.addEventListener('pointercancel', releaseDrag);
+  canvas.addEventListener('pointerleave', function(e){
+    if (S.dragging && e.pointerType === 'mouse' && e.pointerId === S.activePointerId) releaseDrag(e);
+  });
+
+  // ---- physics ----
+  function resetBall(){
+    S.ball.x = START_X; S.ball.y = START_Y; S.ball.vx = 0; S.ball.vy = 0;
+    S.inFlight = false; S.scoredThisFlight = false; S.flightT = 0;
+  }
+
+  function addPopup(x, y, text, color){
+    S.popups.push({ x:x, y:y, t:0, text:text, color:color });
+  }
+
+  function updatePhysics(dt){
+    if (!S.inFlight) return;
+    S.flightT += dt;
+
+    var prevY = S.ball.y;
+    S.ball.vy += GRAVITY * dt;
+    S.ball.x += S.ball.vx * dt;
+    S.ball.y += S.ball.vy * dt;
+
+    // backboard collision: a flat panel that only exists to the sides of
+    // the rim opening, not across it — a real board sits around the hoop,
+    // it doesn't seal the opening shut. With the ball now nearly as wide as
+    // the gap, giving the board the full width used to wedge the ball
+    // between the board's underside and the rim right above the basket,
+    // bouncing it in place until the shot timed out as a miss. A shot
+    // heading through the gap now rises past that height untouched; only a
+    // ball that has drifted clear outside the rim's own footprint can
+    // clang off the glass and bank back down.
+    var clearOfRimGap = S.ball.x < POST_L.x || S.ball.x > POST_R.x;
+    if (clearOfRimGap && S.ball.vy < 0 && prevY > BOARD_Y1 && S.ball.y - BALL_R <= BOARD_Y1 &&
+        S.ball.x > BOARD_X0 - BALL_R && S.ball.x < BOARD_X1 + BALL_R){
+      S.ball.y = BOARD_Y1 + BALL_R;
+      S.ball.vy = -S.ball.vy * 0.45;
+      S.ball.vx *= 0.8;
+      S.netFlash = 0.12;
+    }
+
+    // rim post collisions — only "solid" once the ball is coming back down.
+    // On the way up the ball is still mid-parabola, headed toward its own
+    // apex, not yet at the rim's depth — in a real 3D shot it simply isn't
+    // there yet, even though this flattened 2D view can make its circle
+    // look like it's grazing the rim on screen. Without this gate, a rising
+    // ball would bounce off the rim early on a coincidence of screen
+    // position, which read as "touch it and it goes in". Gating collision
+    // to the descending half means the rim only ever interacts with the
+    // ball once, on its real way down into the hoop.
+    if (S.ball.vy >= 0){
+      [POST_L, POST_R].forEach(function(post){
+        var dx = S.ball.x - post.x, dy = S.ball.y - post.y;
+        var d = Math.sqrt(dx*dx + dy*dy);
+        var minD = BALL_R + post.r;
+        if (d > 0 && d < minD){
+          var nx = dx / d, ny = dy / d;
+          var dot = S.ball.vx * nx + S.ball.vy * ny;
+          S.ball.vx = (S.ball.vx - 2 * dot * nx) * 0.55;
+          S.ball.vy = (S.ball.vy - 2 * dot * ny) * 0.55;
+          var overlap = minD - d;
+          S.ball.x += nx * overlap;
+          S.ball.y += ny * overlap;
+          S.netFlash = 0.15;
+        }
+      });
+    }
+
+    // scoring: crossing rim line downward, center between the two posts.
+    // The post-collision block above already ran this same frame and can
+    // never leave the ball overlapping a post (it pushes any overlap out
+    // to exactly touching), so we don't need our own extra clearance
+    // margin here — adding one caused the bug where a shot that clipped a
+    // post and bounced inward still failed the check, because the push-out
+    // is radial (some of it spent moving the ball vertically, not
+    // sideways) and rarely cleared a second, independent margin on top of
+    // the physics. Trusting the collision resolution's own margin is both
+    // simpler and correct: a rattle that lands between the posts now scores.
+    if (!S.scoredThisFlight && S.ball.vy > 0 && prevY < RIM_Y && S.ball.y >= RIM_Y){
+      if (S.ball.x > POST_L.x && S.ball.x < POST_R.x){
+        S.scoredThisFlight = true;
+        S.score += 2;
+        S.netFlash = 0.35;
+        addPopup(RIM_CX, RIM_Y - 6, '+2', '#ffd580');
+        triggerScoreEffect();
+        // Live-updated so the always-visible Best value (and a saved record)
+        // reflect a new high score the instant it happens, not only once the
+        // round ends — showOver()'s own check below is then just a harmless
+        // no-op safety net for this same value.
+        if (S.score > S.hiscore){
+          S.hiscore = S.score;
+          writeHiscore(S.hiscore);
+        }
+      }
+    }
+
+    // out of bounds -> end flight
+    var out = S.ball.y - BALL_R > H + 20 || S.ball.x < -40 || S.ball.x > W + 40 || S.flightT > 4.2;
+    if (out){
+      if (!S.scoredThisFlight){
+        addPopup(Math.max(24, Math.min(W-24, S.ball.x)), Math.min(H - 60, Math.max(60, S.ball.y)), 'MISS', '#9aa0bd');
+        triggerMissEffect();
+      }
+      resetBall();
+    }
+  }
+
+  function updatePopups(dt){
+    for (var i = S.popups.length - 1; i >= 0; i--){
+      S.popups[i].t += dt;
+      if (S.popups[i].t > 0.9) S.popups.splice(i, 1);
+    }
+    if (S.netFlash > 0) S.netFlash = Math.max(0, S.netFlash - dt);
+  }
+
+  // ---- rendering ----
+  function drawCourt(){
+    var g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#241c30');
+    g.addColorStop(0.55, '#2a2138');
+    g.addColorStop(1, '#382a3a');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+
+    // floodlight glows
+    var glow = ctx.createRadialGradient(90, 40, 10, 90, 40, 220);
+    glow.addColorStop(0, 'rgba(255,213,128,0.16)');
+    glow.addColorStop(1, 'rgba(255,213,128,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, H);
+
+    var glow2 = ctx.createRadialGradient(340, 20, 10, 340, 20, 200);
+    glow2.addColorStop(0, 'rgba(255,106,46,0.14)');
+    glow2.addColorStop(1, 'rgba(255,106,46,0)');
+    ctx.fillStyle = glow2;
+    ctx.fillRect(0, 0, W, H);
+
+    // key/lane, drawn in forced perspective narrowing toward the hoop —
+    // a real court marking, seen the way a player looking up at the rim would
+    var laneTopW = 96, laneBotW = 190, laneTopY = 210, laneBotY = H - 20;
+    ctx.strokeStyle = 'rgba(242,240,232,0.18)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(RIM_CX - laneBotW / 2, laneBotY);
+    ctx.lineTo(RIM_CX - laneTopW / 2, laneTopY);
+    ctx.moveTo(RIM_CX + laneBotW / 2, laneBotY);
+    ctx.lineTo(RIM_CX + laneTopW / 2, laneTopY);
+    ctx.stroke();
+
+    // free-throw circle
+    ctx.beginPath();
+    ctx.ellipse(RIM_CX, laneTopY, laneTopW / 2, 16, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // baseline
+    ctx.beginPath();
+    ctx.moveTo(0, H - 20);
+    ctx.lineTo(W, H - 20);
+    ctx.strokeStyle = 'rgba(242,240,232,0.14)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  function drawHoop(){
+    // backboard — a flat panel viewed head-on, centered over the rim
+    var boardW = BOARD_X1 - BOARD_X0, boardH = BOARD_Y1 - BOARD_Y0;
+    ctx.fillStyle = 'rgba(233,231,224,0.16)';
+    ctx.strokeStyle = 'rgba(233,231,224,0.9)';
+    ctx.lineWidth = 2.5;
+    ctx.fillRect(BOARD_X0, BOARD_Y0, boardW, boardH);
+    ctx.strokeRect(BOARD_X0, BOARD_Y0, boardW, boardH);
+
+    // shooter's square, centered on the board just above the rim
+    ctx.strokeStyle = 'rgba(255,90,40,0.75)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(RIM_CX - 22, BOARD_Y0 + 9, 44, boardH - 15);
+
+    // net — lines converge from the rim to a point below, flashing
+    // brighter for a beat whenever the ball grazes or drops through
+    var netAlpha = 0.55 + S.netFlash * 0.9;
+    ctx.strokeStyle = 'rgba(242,240,232,' + Math.min(1, netAlpha) + ')';
+    ctx.lineWidth = 1.4;
+    var netBottomY = RIM_Y + 38;
+    for (var i = -4; i <= 4; i++){
+      var topX = RIM_CX + i * (RIM_RX / 4.2);
+      var botX = RIM_CX + i * 4;
+      ctx.beginPath();
+      ctx.moveTo(topX, RIM_Y + 1);
+      ctx.lineTo(botX, netBottomY);
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.ellipse(RIM_CX, RIM_Y + 18, RIM_RX * 0.6, 6, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // rim — a flattened ring, seen from just below eye level
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = '#ff5522';
+    ctx.beginPath();
+    ctx.ellipse(RIM_CX, RIM_Y, RIM_RX, 12, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.beginPath();
+    ctx.ellipse(RIM_CX, RIM_Y, RIM_RX, 12, 0, Math.PI, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  function drawBall(x, y){
+    var g = ctx.createRadialGradient(x - 5, y - 6, 2, x, y, BALL_R);
+    g.addColorStop(0, '#ffb27a');
+    g.addColorStop(0.5, '#ff6a2e');
+    g.addColorStop(1, '#c94f1f');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(x, y, BALL_R, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(30,12,4,0.75)';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(x - BALL_R, y);
+    ctx.lineTo(x + BALL_R, y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, y - BALL_R);
+    ctx.lineTo(x, y + BALL_R);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(x, y, BALL_R - 1, -0.9, 0.9);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(x, y, BALL_R - 1, Math.PI - 0.9, Math.PI + 0.9);
+    ctx.stroke();
+  }
+
+  function drawAim(){
+    if (!S.dragging || !S.dragPoint) return;
+    var dp = S.dragPoint;
+    var d = dist(dp.x, dp.y, S.ball.x, S.ball.y);
+    var power = Math.min(d, MAX_DRAG) / MAX_DRAG;
+
+    ctx.setLineDash([6, 6]);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(242,240,232,0.55)';
+    ctx.beginPath();
+    ctx.moveTo(S.ball.x, S.ball.y);
+    ctx.lineTo(dp.x, dp.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // shoot direction indicator (opposite of drag)
+    var shootX = S.ball.x + (S.ball.x - dp.x);
+    var shootY = S.ball.y + (S.ball.y - dp.y);
+    var col = power < 0.5 ? '#8dd6a8' : power < 0.85 ? '#ffd580' : '#ff5a40';
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(S.ball.x, S.ball.y);
+    ctx.lineTo(shootX, shootY);
+    ctx.stroke();
+
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.arc(shootX, shootY, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawPopups(){
+    S.popups.forEach(function(p){
+      var progress = p.t / 0.9;
+      ctx.globalAlpha = Math.max(0, 1 - progress);
+      ctx.fillStyle = p.color;
+      ctx.font = "600 22px 'Teko', sans-serif";
+      ctx.textAlign = 'center';
+      ctx.fillText(p.text, p.x, p.y - progress * 28);
+      ctx.globalAlpha = 1;
+    });
+  }
+
+  function render(){
+    drawCourt();
+    drawHoop();
+    drawAim();
+    drawBall(S.ball.x, S.ball.y);
+    drawPopups();
+  }
+
+  // ---- UI sync ----
+  function syncUI(){
+    scoreEl.textContent = S.score;
+    var t = Math.max(0, Math.ceil(S.timeLeft));
+    timeEl.textContent = t;
+    timeStat.classList.toggle('low', t <= 10 && S.phase === 'playing');
+    pauseBtn.hidden = (S.phase !== 'playing');
+    hiscoreValEl.textContent = S.hiscore; // always-visible best, not just on the game-over card
+  }
+
+  function showStart(){
+    startOverlay.hidden = false;
+    pauseOverlay.hidden = true;
+    overOverlay.hidden = true;
+  }
+  function hideOverlays(){
+    startOverlay.hidden = true;
+    pauseOverlay.hidden = true;
+    overOverlay.hidden = true;
+  }
+  function showOver(){
+    overOverlay.hidden = false;
+    finalScoreEl.textContent = S.score;
+    var passed = S.score >= PASS_SCORE;
+    resultBadge.textContent = passed ? '성공' : '실패';
+    resultBadge.className = 'result-badge ' + (passed ? 'pass' : 'fail');
+    if (S.score > S.hiscore){
+      S.hiscore = S.score;
+      writeHiscore(S.hiscore);
+    }
+    hiscoreLine.textContent = '최고 기록 ' + S.hiscore + '골';
+  }
+
+  function startGame(){
+    var hs = S.hiscore;
+    S = freshState();
+    S.hiscore = hs;
+    S.phase = 'playing';
+    hideOverlays();
+    syncUI();
+  }
+
+  // Pausing freezes the timer and every physics update outright (the main
+  // loop below only advances either while S.phase === 'playing'), so score,
+  // time left, and the ball's in-flight position/velocity are byte-for-byte
+  // the same the instant play resumes. Any drag in progress is cancelled
+  // rather than left dangling mid-pause.
+  function pauseGame(){
+    if (S.phase !== 'playing') return;
+    S.phase = 'paused';
+    S.dragging = false;
+    S.dragPoint = null;
+    S.activePointerId = null;
+    hideOverlays();
+    pauseOverlay.hidden = false;
+    syncUI();
+  }
+  function resumeGame(){
+    if (S.phase !== 'paused') return;
+    S.phase = 'playing';
+    S.lastT = null; // re-sync the frame clock so the paused duration isn't read as one huge dt
+    pauseOverlay.hidden = true;
+    syncUI();
+  }
+
+  startBtn.addEventListener('click', startGame);
+  retryBtn.addEventListener('click', startGame);
+  pauseBtn.addEventListener('click', pauseGame);
+  resumeBtn.addEventListener('click', resumeGame);
+  soundBtn.addEventListener('click', function(){
+    soundOn = !soundOn;
+    writeSoundPref(soundOn);
+    syncSoundBtn();
+    if (soundOn) getAudioCtx(); // create/resume inside this same user gesture
+  });
+  syncSoundBtn();
+
+  // Losing focus (switching tabs/apps, minimizing) auto-pauses an in-progress
+  // round instead of letting the timer or physics run unattended in the
+  // background — coming back always finds the same frozen state, and the
+  // player explicitly resumes from the pause overlay rather than being
+  // dropped back in mid-action.
+  document.addEventListener('visibilitychange', function(){
+    if (document.hidden && S.phase === 'playing') pauseGame();
+  });
+
+  // ---- main loop ----
+  function frame(now){
+    if (S.lastT == null) S.lastT = now;
+    var dt = Math.min(0.033, (now - S.lastT) / 1000);
+    S.lastT = now;
+
+    if (S.phase === 'playing'){
+      S.timeLeft -= dt;
+      updatePhysics(dt);
+      updatePopups(dt);
+      if (S.timeLeft <= 0){
+        S.timeLeft = 0;
+        S.phase = 'over';
+        showOver();
+      }
+      syncUI();
+    } else if (S.phase !== 'paused'){
+      updatePopups(dt);
+    }
+    // phase === 'paused': no timer, no physics, no popup aging — everything holds still.
+
+    render();
+    requestAnimationFrame(frame);
+  }
+
+  function boot(saved){
+    if (saved && saved.score != null && saved.phase === 'playing'){
+      S.score = saved.score;
+      S.timeLeft = saved.timeLeft;
+      S.phase = 'playing';
+      hideOverlays();
+    } else {
+      showStart();
+    }
+    syncUI();
+    render();
+    requestAnimationFrame(frame);
+  }
+
+  if (window.claude && window.claude.hot){
+    window.claude.hot.snapshot(function(){
+      return { score: S.score, timeLeft: S.timeLeft, phase: S.phase };
+    });
+    if (window.claude.hot.ready){
+      window.claude.hot.ready(function(){ boot(window.claude.hot.data); });
+    } else {
+      boot(window.claude.hot.data);
+    }
+  } else {
+    boot(null);
+  }
+})();
+</script>
