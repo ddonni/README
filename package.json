@@ -1,0 +1,34 @@
+{
+  "name": "readme-passkey",
+  "version": "1.0.0",
+  "description": "곽도현 소개 페이지 + 패스키로 잠근 나만의 자리",
+  "scripts": {
+    "dev": "node scripts/dev-server.mjs",
+    "e2e": "node scripts/e2e.mjs",
+    "stranger-check": "node scripts/stranger-check.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ddonni/README.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ddonni/README/issues"
+  },
+  "homepage": "https://github.com/ddonni/README#readme",
+  "dependencies": {
+    "@simplewebauthn/server": "^13.3.3",
+    "@supabase/supabase-js": "^2.117.3"
+  },
+  "devDependencies": {
+    "@simplewebauthn/browser": "^13.3.0",
+    "playwright-core": "^1.64.0"
+  },
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  }
+}

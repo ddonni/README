@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>나만의 자리 · 곽도현</title>
+<style>
+  :root {
+    --bg: #fbfaf8; --fg: #1c1c1a; --muted: #6b6b64; --line: #dedad2; --accent: #8a7a5c;
+    --ok: #3f6f4a; --bad: #9a3b2e; --code: #f1eee8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161614; --fg: #ece9e2; --muted: #9a988f; --line: #35342e; --accent: #c4b48c;
+      --ok: #8cc49a; --bad: #e39a8c; --code: #22211e;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Malgun Gothic", sans-serif;
+    line-height: 1.75; -webkit-font-smoothing: antialiased;
+  }
+  main { max-width: 640px; margin: 0 auto; padding: 72px 24px 120px; }
+  .back { color: var(--muted); font-size: 0.9rem; text-decoration: none; border-bottom: 1px solid var(--line); }
+  .zone { display: table; margin-top: 40px; font-size: 0.72rem; letter-spacing: 0.14em; color: var(--accent); border: 1px solid var(--accent); padding: 2px 8px; }
+  h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; margin: 12px 0 8px; }
+  h2 { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 56px 0 18px; }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); font-size: 0.92rem; }
+  button {
+    font: inherit; color: var(--fg); background: none; cursor: pointer;
+    border: 1px solid var(--fg); padding: 8px 16px; margin: 4px 8px 4px 0;
+  }
+  button.primary { background: var(--fg); color: var(--bg); }
+  button.link { border: none; border-bottom: 1px solid var(--accent); padding: 0; }
+  button:disabled { opacity: 0.5; cursor: wait; }
+  button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  input, textarea {
+    font: inherit; color: var(--fg); background: transparent; width: 100%;
+    border: 1px solid var(--line); padding: 8px 10px; margin: 4px 0 10px;
+  }
+  textarea { min-height: 72px; resize: vertical; }
+  .msg { min-height: 1.75em; font-size: 0.92rem; }
+  .msg.ok { color: var(--ok); }
+  .msg.bad { color: var(--bad); }
+  ul.plain { list-style: none; margin: 0; padding: 0; }
+  ul.plain > li { padding: 14px 0; border-bottom: 1px solid var(--line); }
+  ul.plain > li:last-child { border-bottom: none; }
+  .meta { color: var(--muted); font-size: 0.82rem; }
+  code, .key {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.78rem;
+    background: var(--code); padding: 1px 4px; word-break: break-all;
+  }
+  .key { display: block; padding: 8px; margin: 6px 0; line-height: 1.5; }
+  .tag { font-size: 0.72rem; color: var(--ok); border: 1px solid var(--ok); padding: 0 6px; margin-left: 6px; }
+  details { margin-top: 56px; }
+  summary { cursor: pointer; color: var(--muted); font-size: 0.9rem; }
+  #log { margin: 12px 0 0; padding: 0; list-style: none; }
+  #log li { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.76rem; padding: 6px 0; border-bottom: 1px dashed var(--line); word-break: break-all; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="/">← 공개 소개 페이지로</a>
+  <div class="zone">비공개 영역 · 패스키로 잠김</div>
+  <h1>나만의 자리</h1>
+  <p class="muted">비밀번호 입력 칸은 없습니다. 등록한 기기의 패스키로만 열립니다.</p>
+
+  <p id="msg" class="msg" role="status" aria-live="polite"></p>
+
+  <!-- 1) 잠겨 있을 때: 패스키 로그인 (+ 새 계정 자리가 남아 있으면 계정 만들기) -->
+  <section id="v-locked" hidden>
+    <h2>잠겨 있음</h2>
+    <p>이 아래 내용은 로그인하기 전에는 서버가 내려 주지 않습니다. 등록한 기기에서 지문·얼굴·PIN으로 확인하면 열립니다.</p>
+    <button class="primary" id="btn-login">패스키로 들어가기</button>
+
+    <div id="signup" hidden>
+      <h2>새 계정 만들기</h2>
+      <p class="muted">비밀번호 없이, 지금 이 기기의 패스키로 계정을 만듭니다. 계정은 최대 2개까지만 만들 수 있고, 다 차면 이 칸은 사라집니다. 실명 대신 만든 이름을 쓰세요.</p>
+      <label for="signup-name" class="muted">계정 이름</label>
+      <input id="signup-name" maxlength="30" placeholder="예: 메인 계정">
+      <label for="signup-label" class="muted">이 패스키의 이름 (어느 기기·어디에 저장했는지)</label>
+      <input id="signup-label" maxlength="40" placeholder="예: 갤럭시 - 구글 비밀번호 관리자">
+      <button id="btn-signup">이 기기로 계정 + 패스키 만들기</button>
+    </div>
+  </section>
+
+  <!-- 2) 열렸을 때 -->
+  <section id="v-open" hidden>
+    <p class="muted">계정: <b id="acct-name"></b> · 아래 내용은 모두 만들어 넣은 것이며 실제 개인정보가 아닙니다.</p>
+    <div id="note-groups"></div>
+
+    <h2>등록된 패스키</h2>
+    <p class="muted">서버에 저장된 것은 아래의 <b>공개키</b>뿐입니다. 공개키는 비밀번호가 아니라서 남이 봐도 이것으로 들어올 수 없습니다. 개인키는 각 기기 안에만 있습니다.</p>
+    <ul class="plain" id="keys"></ul>
+    <p class="muted" id="last-key-note">패스키가 하나만 남으면 지울 수 없습니다. 하나도 없으면 이 계정에는 다시 들어올 방법이 없기 때문입니다(비밀번호도 복구 메일도 없음). 기기를 잃어버릴 때를 대비해 다른 기기에 하나 더 등록해 두세요.</p>
+    <label for="add-label" class="muted">추가할 패스키 이름 (다른 기기 또는 다른 저장소에서 등록)</label>
+    <input id="add-label" maxlength="40" placeholder="예: 노트북 - 윈도우 Hello">
+    <button id="btn-add">패스키 하나 더 등록</button>
+
+    <h2>나가기</h2>
+    <button id="btn-logout">로그아웃</button>
+  </section>
+
+  <details>
+    <summary>요청 기록 보기 (질문이 매번 바뀌는지 확인용)</summary>
+    <ul id="log"></ul>
+  </details>
+</main>
+
+<script src="./vendor/simplewebauthn-browser-13.3.0.umd.min.js"></script>
+<script>
+(function () {
+  var SW = window.SimpleWebAuthnBrowser;
+  var $ = function (id) { return document.getElementById(id); };
+  var views = { locked: $('v-locked'), open: $('v-open') };
+  var KINDS = { project: '준비 중인 프로젝트 메모', apply: '지원하려는 곳', retro: '회고' };
+
+  function show(name) {
+    Object.keys(views).forEach(function (k) { views[k].hidden = k !== name; });
+  }
+  function say(text, kind) {
+    var m = $('msg');
+    m.textContent = text || '';
+    m.className = 'msg' + (kind ? ' ' + kind : '');
+  }
+  function log(line) {
+    var li = document.createElement('li');
+    li.textContent = new Date().toLocaleTimeString('ko-KR') + '  ' + line;
+    $('log').prepend(li);
+  }
+  function short(s) { return s && s.length > 20 ? s.slice(0, 20) + '…' : s; }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  async function api(method, path, body) {
+    if (method !== 'GET' && !body) body = {};
+    var res = await fetch(path, {
+      method: method,
+      credentials: 'same-origin',
+      headers: body ? { 'Content-Type': 'application/json' } : {},
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    var data = {};
+    try { data = await res.json(); } catch (e) {}
+    var extra = data.options && data.options.challenge ? '  challenge=' + short(data.options.challenge) : '';
+    log(method + ' ' + path + ' → ' + res.status + extra + (data.error ? '  (' + data.error + ')' : ''));
+    if (!res.ok) { var err = new Error(data.error || ('HTTP ' + res.status)); err.status = res.status; throw err; }
+    return data;
+  }
+
+  function busy(btn, on) { if (btn) btn.disabled = on; }
+
+  // 브라우저 쪽 오류를 사람이 읽을 말로
+  function explain(err, during) {
+    if (err && err.name === 'NotAllowedError') {
+      return during === 'register'
+        ? '등록을 취소했거나 시간이 지났습니다. 서버에는 아무것도 저장되지 않았습니다.'
+        : '취소했거나 시간이 지났습니다. (또는 이 기기에 이 사이트의 패스키가 없습니다)';
+    }
+    if (err && err.name === 'InvalidStateError') return '이 기기(저장소)는 이미 이 계정에 등록되어 있습니다. 두 번째 패스키는 다른 기기나 다른 저장소에서 등록하세요.';
+    return (err && err.message) || '알 수 없는 오류';
+  }
+
+  async function refresh() {
+    if (!SW || !SW.browserSupportsWebAuthn()) {
+      say('이 브라우저는 패스키를 지원하지 않습니다.', 'bad');
+      return;
+    }
+    var me = await api('GET', '/api/me');
+    if (me.loggedIn) { show('open'); await loadOpen(); }
+    else { $('signup').hidden = !me.signupOpen; show('locked'); }
+  }
+
+  async function register(mode, extra, btn) {
+    busy(btn, true);
+    try {
+      var o = await api('POST', '/api/register/options', Object.assign({ mode: mode }, extra));
+      var att = await SW.startRegistration({ optionsJSON: o.options });
+      var r = await api('POST', '/api/register/verify', { response: att, label: extra.label });
+      ['add-label', 'signup-label', 'signup-name'].forEach(function (id) { $(id).value = ''; });
+      await refresh();
+      say('패스키 "' + r.saved.label + '" 를 등록했습니다. 서버에는 공개키(' + r.saved.publicKeyBytes + '바이트)만 저장됐습니다.', 'ok');
+    } catch (e) { say(explain(e, 'register'), 'bad'); }
+    finally { busy(btn, false); }
+  }
+
+  async function login(btn) {
+    busy(btn, true);
+    try {
+      var o = await api('POST', '/api/login/options');
+      var asr = await SW.startAuthentication({ optionsJSON: o.options });
+      var r = await api('POST', '/api/login/verify', { response: asr });
+      await refresh();
+      say('"' + r.passkey.label + '" 패스키로 "' + r.account + '" 계정에 들어왔습니다.', 'ok');
+    } catch (e) { say(explain(e, 'login'), 'bad'); }
+    finally { busy(btn, false); }
+  }
+
+  async function loadOpen() {
+    var n = await api('GET', '/api/private');
+    $('acct-name').textContent = n.account;
+    var groups = $('note-groups');
+    groups.textContent = '';
+    Object.keys(KINDS).forEach(function (kind) {
+      var sec = el('section');
+      sec.append(el('h2', null, KINDS[kind]));
+      var ul = el('ul', 'plain');
+      var items = n.notes.filter(function (x) { return x.kind === kind; });
+      if (!items.length) ul.append(el('li', 'muted', '아직 없습니다.'));
+      items.forEach(function (note) {
+        var li = el('li');
+        li.append(el('div', null, note.body), el('div', 'meta', new Date(note.created_at).toLocaleString('ko-KR')));
+        var del = el('button', 'link', '지우기');
+        del.addEventListener('click', async function () {
+          try { await api('DELETE', '/api/private', { id: note.id }); await loadOpen(); say('지웠습니다.', 'ok'); }
+          catch (e) { say(explain(e), 'bad'); }
+        });
+        li.append(del);
+        ul.append(li);
+      });
+      var input = el('input');
+      input.maxLength = 500;
+      input.placeholder = KINDS[kind] + ' 추가';
+      input.setAttribute('aria-label', KINDS[kind] + ' 추가');
+      input.dataset.kind = kind;
+      var add = el('button', null, '추가');
+      add.dataset.kind = kind;
+      add.addEventListener('click', async function () {
+        var text = input.value.trim();
+        if (!text) return;
+        try { await api('POST', '/api/private', { kind: kind, body: text }); await loadOpen(); say('저장했습니다.', 'ok'); }
+        catch (e) { if (e.status === 401) await refresh(); say(explain(e), 'bad'); }
+      });
+      sec.append(ul, input, add);
+      groups.append(sec);
+    });
+
+    var k = await api('GET', '/api/passkeys');
+    var kl = $('keys');
+    kl.textContent = '';
+    k.passkeys.forEach(function (pk) {
+      var li = el('li');
+      var title = el('div', null, pk.label);
+      if (pk.id === k.currentPasskeyId) title.append(el('span', 'tag', '지금 이걸로 들어옴'));
+      var meta = el('div', 'meta',
+        '등록 ' + new Date(pk.createdAt).toLocaleString('ko-KR') +
+        (pk.lastUsedAt ? ' · 마지막 사용 ' + new Date(pk.lastUsedAt).toLocaleString('ko-KR') : ' · 아직 로그인에 안 씀') +
+        ' · ' + (pk.deviceType === 'multiDevice' ? '동기화되는 패스키' : '이 기기 전용 패스키') +
+        ' · ID ' + short(pk.id));
+      var keyLabel = el('div', 'meta', '공개키 (' + pk.publicKeyFormat + ')');
+      var key = el('code', 'key', pk.publicKey);
+      var del = el('button', 'link', '이 패스키 지우기');
+      del.disabled = k.passkeys.length <= 1;
+      del.title = del.disabled ? '마지막 패스키는 지울 수 없습니다' : '';
+      del.addEventListener('click', function () { removeKey(pk, del); });
+      li.append(title, meta, keyLabel, key, del);
+      kl.append(li);
+    });
+  }
+
+  async function removeKey(pk, btn) {
+    if (!confirm('"' + pk.label + '" 패스키를 지울까요? 그 기기로는 더 이상 들어올 수 없습니다.')) return;
+    busy(btn, true);
+    try {
+      var r = await api('DELETE', '/api/passkeys', { id: pk.id });
+      await refresh();
+      say(r.youWereLoggedOut
+        ? '"' + pk.label + '" 를 지웠고, 그 패스키로 열었던 로그인도 끝났습니다. 남은 패스키로 다시 들어오세요.'
+        : '"' + pk.label + '" 를 지웠습니다.', 'ok');
+    } catch (e) { say(explain(e), 'bad'); busy(btn, false); }
+  }
+
+  $('btn-signup').addEventListener('click', function () {
+    register('signup', { name: $('signup-name').value, label: $('signup-label').value }, this);
+  });
+  $('btn-add').addEventListener('click', function () { register('add', { label: $('add-label').value }, this); });
+  $('btn-login').addEventListener('click', function () { login(this); });
+  $('btn-logout').addEventListener('click', async function () {
+    try { await api('POST', '/api/logout'); await refresh(); say('로그아웃했습니다.', 'ok'); }
+    catch (e) { say(explain(e), 'bad'); }
+  });
+
+  refresh().catch(function (e) { say(explain(e), 'bad'); });
+})();
+</script>
+</body>
+</html>

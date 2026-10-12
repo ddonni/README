@@ -173,6 +173,17 @@
       transition: none;
     }
   }
+  .private-door {
+    margin-top: 72px;
+    padding: 20px 22px 6px;
+    border: 1px dashed var(--accent);
+  }
+  .private-door-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
   footer {
     margin-top: 100px;
     color: var(--muted);
@@ -262,6 +273,12 @@
     <h2>링크</h2>
     <p><a href="https://github.com/domathang" target="_blank" rel="noopener">github.com/domathang</a></p>
   </section>
+
+  <aside class="private-door" aria-label="비공개 영역 입구">
+    <div class="private-door-label">여기부터 비공개 영역</div>
+    <p>위까지가 누구나 보는 공개 소개입니다. 아래 문은 패스키로 잠겨 있고, 들어가도 이 페이지 주인의 메모만 있습니다.</p>
+    <p class="links"><a href="/me/">나만의 자리 →</a> <span class="note">(비밀번호 없음 · 패스키로만 열림)</span></p>
+  </aside>
 
   <footer>
     이 페이지에 담긴 내용은 모두 사실임을 곽도현이 보장합니다.
