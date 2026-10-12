@@ -35,7 +35,8 @@
   }
   button.primary { background: var(--fg); color: var(--bg); }
   button.link { border: none; border-bottom: 1px solid var(--accent); padding: 0; }
-  button:disabled { opacity: 0.5; cursor: wait; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  button.is-busy { cursor: wait; }
   button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   input, textarea {
     font: inherit; color: var(--fg); background: transparent; width: 100%;
@@ -156,7 +157,7 @@
     return data;
   }
 
-  function busy(btn, on) { if (btn) btn.disabled = on; }
+  function busy(btn, on) { if (btn) { btn.disabled = on; btn.classList.toggle('is-busy', on); } }
 
   // 브라우저 쪽 오류를 사람이 읽을 말로
   function explain(err, during) {
@@ -257,9 +258,10 @@
         ' · ID ' + short(pk.id));
       var keyLabel = el('div', 'meta', '공개키 (' + pk.publicKeyFormat + ')');
       var key = el('code', 'key', pk.publicKey);
-      var del = el('button', 'link', '이 패스키 지우기');
-      del.disabled = k.passkeys.length <= 1;
-      del.title = del.disabled ? '마지막 패스키는 지울 수 없습니다' : '';
+      var isLast = k.passkeys.length <= 1;
+      var del = el('button', 'link', isLast ? '마지막 패스키라 지울 수 없음 (다른 기기에 하나 더 등록하면 지울 수 있어요)' : '이 패스키 지우기');
+      del.disabled = isLast;
+      del.title = isLast ? '하나도 없으면 이 계정에 다시 들어올 방법이 없어서 막아 두었습니다' : '';
       del.addEventListener('click', function () { removeKey(pk, del); });
       li.append(title, meta, keyLabel, key, del);
       kl.append(li);
