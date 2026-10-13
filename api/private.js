@@ -50,10 +50,10 @@ export default handler(['GET', 'POST', 'DELETE'], async (req, res) => {
   const notes = await store.listNotes(me);
   sendJson(res, 200, {
     ok: true,
-    account: user.name,
-    kinds: NOTE_KINDS,
+    account: user.name, // ← 주소에 무엇을 적든 언제나 로그인한 내 계정
+    ...(ignoredQuery.length && { ignored: ignoredQuery, note: '다른 계정을 가리키는 값은 무시하고 내 자료만 돌려줍니다.' }),
     count: notes.length,
     notes,
-    ...(ignoredQuery.length && { ignored: ignoredQuery, note: '다른 계정을 가리키는 값은 무시하고 내 자료만 돌려줍니다.' }),
+    kinds: NOTE_KINDS,
   });
 });

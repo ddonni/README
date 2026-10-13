@@ -55,6 +55,7 @@
     background: var(--code); padding: 1px 4px; word-break: break-all;
   }
   .key { display: block; padding: 8px; margin: 6px 0; line-height: 1.5; }
+  pre.key { white-space: pre-wrap; }
   .tag { font-size: 0.72rem; color: var(--ok); border: 1px solid var(--ok); padding: 0 6px; margin-left: 6px; }
   details { margin-top: 56px; }
   summary { cursor: pointer; color: var(--muted); font-size: 0.9rem; }
@@ -91,7 +92,7 @@
 
   <!-- 2) 열렸을 때 -->
   <section id="v-open" hidden>
-    <p class="muted">계정: <b id="acct-name"></b> · 아래 내용은 모두 만들어 넣은 것이며 실제 개인정보가 아닙니다.</p>
+    <p class="muted">계정: <b id="acct-name"></b> · 메모 <b id="note-count"></b>건 · 아래 내용은 모두 만들어 넣은 것이며 실제 개인정보가 아닙니다.</p>
     <div id="note-groups"></div>
 
     <h2>등록된 패스키</h2>
@@ -101,6 +102,17 @@
     <label for="add-label" class="muted">추가할 패스키 이름 (다른 기기 또는 다른 저장소에서 등록)</label>
     <input id="add-label" maxlength="40" placeholder="예: 노트북 - 윈도우 Hello">
     <button id="btn-add">패스키 하나 더 등록</button>
+
+    <h2>교차 확인 — 다른 계정 자료 요청해 보기</h2>
+    <p class="muted">다른 계정 메모의 번호(#)를 넣고 눌러 보세요. 서버는 로그인한 내 계정 것만 돌려주므로 <b>읽기·지우기는 404</b>, 주소에 다른 계정을 적은 목록 요청은 <b>내 자료만 200</b>으로 와야 정상입니다. 요청과 응답이 아래에 그대로 표시됩니다.</p>
+    <label for="x-id" class="muted">다른 계정 메모 번호</label>
+    <input id="x-id" inputmode="numeric" placeholder="예: 4">
+    <label for="x-acct" class="muted">다른 계정 이름 (주소·본문에 적어 보낼 값)</label>
+    <input id="x-acct" maxlength="30" placeholder="예: 상대 계정 이름">
+    <button id="x-read">읽기 요청</button>
+    <button id="x-del">지우기 요청</button>
+    <button id="x-list">주소에 다른 계정 적고 목록 요청</button>
+    <pre id="x-out" class="key" hidden></pre>
 
     <h2>나가기</h2>
     <button id="btn-logout">로그아웃</button>
@@ -208,6 +220,7 @@
   async function loadOpen() {
     var n = await api('GET', '/api/private');
     $('acct-name').textContent = n.account;
+    $('note-count').textContent = n.count;
     var groups = $('note-groups');
     groups.textContent = '';
     Object.keys(KINDS).forEach(function (kind) {
@@ -218,7 +231,7 @@
       if (!items.length) ul.append(el('li', 'muted', '아직 없습니다.'));
       items.forEach(function (note) {
         var li = el('li');
-        li.append(el('div', null, note.body), el('div', 'meta', new Date(note.created_at).toLocaleString('ko-KR')));
+        li.append(el('div', null, note.body), el('div', 'meta', '#' + note.id + ' · ' + new Date(note.created_at).toLocaleString('ko-KR')));
         var del = el('button', 'link', '지우기');
         del.addEventListener('click', async function () {
           try { await api('DELETE', '/api/private', { id: note.id }); await loadOpen(); say('지웠습니다.', 'ok'); }
@@ -285,6 +298,35 @@
   });
   $('btn-add').addEventListener('click', function () { register('add', { label: $('add-label').value }, this); });
   $('btn-login').addEventListener('click', function () { login(this); });
+  // 교차 확인: 실패해도 멈추지 않고 요청·응답을 그대로 화면에 보여 줌
+  async function probe(method, path, body) {
+    var res = await fetch(path, {
+      method: method, credentials: 'same-origin',
+      headers: body ? { 'Content-Type': 'application/json' } : {},
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    var text = await res.text();
+    try { text = JSON.stringify(JSON.parse(text), null, 2); } catch (e) {}
+    var out = $('x-out');
+    out.hidden = false;
+    out.textContent = new Date().toLocaleString('ko-KR') + '\n' +
+      method + ' ' + path + (body ? '\n' + JSON.stringify(body) : '') +
+      '\n→ ' + res.status + '\n' + text;
+    log(method + ' ' + path + ' → ' + res.status);
+  }
+  $('x-read').addEventListener('click', function () {
+    var id = $('x-id').value.trim(); if (!id) return;
+    probe('GET', '/api/private?id=' + encodeURIComponent(id));
+  });
+  $('x-del').addEventListener('click', function () {
+    var id = $('x-id').value.trim(); if (!id) return;
+    probe('DELETE', '/api/private', { id: Number(id) || id, account: $('x-acct').value.trim() || undefined });
+  });
+  $('x-list').addEventListener('click', function () {
+    var a = $('x-acct').value.trim() || '다른계정';
+    probe('GET', '/api/private?account=' + encodeURIComponent(a) + '&user=' + encodeURIComponent(a));
+  });
+
   $('btn-logout').addEventListener('click', async function () {
     try { await api('POST', '/api/logout'); await refresh(); say('로그아웃했습니다.', 'ok'); }
     catch (e) { say(explain(e), 'bad'); }
