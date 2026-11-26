@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>곽도현</title>
+<title>곽도현 — 데브옵스 엔지니어 지망</title>
+<meta name="description" content="곽도현의 포트폴리오: 이야기, 13주 기록의 수치, 대표작">
 <style>
   :root {
     --bg: #fbfaf8;
@@ -189,47 +190,124 @@
     color: var(--muted);
     font-size: 0.82rem;
   }
+
+  .tagline { color: var(--fg); font-size: 1.12rem; }
+  .first { min-height: 70vh; display: flex; flex-direction: column; justify-content: center; margin-bottom: 40px; }
+  .nav { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-top: 30px; }
+  .nav a { color: var(--fg); text-decoration: none; border-bottom: 1px solid var(--accent); }
+  .nav a:hover { border-bottom-width: 2px; }
+  .contact { margin-top: 18px; color: var(--muted); font-size: 0.92rem; }
+  .contact a { color: var(--muted); }
+  .scene { margin-bottom: 26px; }
+  .scene-label { font-size: 0.78rem; color: var(--accent); letter-spacing: 0.04em; margin-bottom: 4px; }
+  .tag { display: inline-block; font-size: 0.74rem; border: 1px solid var(--line); padding: 0 7px; margin-left: 6px; color: var(--muted); }
+  .nums { margin: 0; }
+  .num { display: grid; grid-template-columns: 110px 1fr; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .num:last-child { border-bottom: none; }
+  .num dt { font-weight: 600; font-size: 1.1rem; }
+  .num dd { margin: 0; }
+  .src { display: block; color: var(--muted); font-size: 0.82rem; }
+  .abilities h3 { font-size: 0.95rem; margin: 22px 0 8px; }
+  .abilities p .src { display: block; }
+  .link-scene { border-left: 2px solid var(--accent); padding-left: 14px; margin-top: 20px; }
+  .placeholder { border: 1px dashed var(--line); padding: 16px 18px; color: var(--muted); }
+  @media (max-width: 480px) { .num { grid-template-columns: 1fr; gap: 2px; } }
 </style>
 </head>
 <body>
 <main>
 
-  <header>
-    <h1>안녕하세요 무언가를 찾고 있는 개발자 곽도현입니다.</h1>
+  <header class="first">
+    <h1>곽도현</h1>
+    <p class="tagline">2023년 2월의 “기대만큼 성장하지 못했다”를, 스스로 세운 기준으로 다시 쓰고 있는 사람</p>
+    <nav class="nav" aria-label="바로 가기">
+      <a href="#story">이야기</a>
+      <a href="#numbers">수치</a>
+      <a href="#works">대표작</a>
+      <a href="/resume/">이력서·자기소개서·경력기술서</a>
+    </nav>
+    <p class="contact">연락: <a href="mailto:kwakdh25@gmail.com">kwakdh25@gmail.com</a></p>
   </header>
 
-  <section id="about">
-    <h2>소개</h2>
-    <p>차분하고 신중한 편입니다.</p>
-    <p class="note">군 복무를 마치고, SKT ALEPH 국비교육을 통해 다시 공부를 시작했습니다.</p>
-    <button type="button" class="toggle" id="about-toggle" aria-expanded="false" aria-controls="about-more">더 보기</button>
-    <div id="about-more" class="collapsible" aria-hidden="true">
-      <p>정보처리기능사와 SQLD를 취득했지만 군 복무 이후 많이 잊어버려서, 지금은 SKT ALEPH 국비교육에서 Python 기반 개발과 인프라를 처음부터 다시 체계적으로 공부하고 있습니다.</p>
+  <section id="story">
+    <h2>이야기</h2>
+    <div class="scene">
+      <div class="scene-label">고난 · 2023-02-28</div>
+      <p>2023년 2월 28일, 열아홉 살의 저는 첫 회사에서 마지막 출근을 했습니다. 일곱 달 동안 쿠버네티스 매니페스트를 헬름 차트로 묶고, GitHub Actions와 ArgoCD로 무중단 배포를 붙였지만, 수습 평가의 결론은 "기대만큼 성장하지 못했다"였습니다. 기준을 미리 듣지 못해 억울했습니다. 그날 밤 억울한 점을 적으려고 연 메모장에는 제 실수가 먼저 쌓였습니다. 환경 변수 하나를 빠뜨려 배포를 망친 날, 모르는 것을 늦게 말한 날들이었습니다.</p>
+    </div>
+    <div class="scene">
+      <div class="scene-label">고난 · 2025-01<span class="tag">자기조절력</span></div>
+      <p>2025년 1월, 저는 그 메모장에 처음으로 솔직한 진단을 적었습니다. "기회는 많았다. 준비가 부족했다." 2년 가까이 패스트푸드점 주방에서 설거지를 하며 산업기능요원에 지원했고 면접 기회도 많았지만, 제가 만든 것을 제 말로 설명하지 못했습니다. 2023년 CKA는 시험 도중 집 인터넷이 끊겨 떨어졌고, 저는 다시 응시하지 않았습니다. 그렇게 2025년 2월 25일에 입대했습니다. 군에서는 연등 시간마다 책을 읽고 다 읽으면 수첩에 제목을 적었습니다. 의지가 갑자기 강해진 것이 아니라 정해진 자리와 작은 규칙이 저를 붙잡아 준다는 것을 그때 알았습니다.</p>
+    </div>
+    <div class="scene">
+      <div class="scene-label">다시 일어선 날 · 2026-10-07 → 10-08<span class="tag">자기조절력</span></div>
+      <p>2026년 10월 7일, 마무리 기록의 강점 칸에 '못 했다'를 표시했습니다. 9월부터 아침마다 '쉬는 시간마다 강점을 한 단어로 말한다'고 적어 왔는데, 그날은 과제에 몰두하느라 한 번도 떠올리지 못했습니다. 이유 칸에는 "까먹어버렸다"고 적었습니다. 다음 날인 10월 8일, 저는 강점 칸에 "속상한 일이 있어도 금방 털고 다시 일어나는 것"이라고 쓰고 그날 '실천했다'를 표시했습니다. 같은 무렵 다이어리 앱 과제에서 지키지 못하던 빽빽한 계획을 '헬스장 출석' 하나로 낮췄고, 그때부터 계획이 이어졌습니다. 마작을 칠 때도 평소라면 하지 않을 선택을 했다 싶으면 1등을 한 판이라도 그만두는 규칙을 세웠습니다. 기분이 아니라 미리 정한 기준이 저를 멈추게 하는 것, 그것이 제가 다시 익힌 자기조절입니다.</p>
+    </div>
+    <div class="scene">
+      <div class="scene-label">함께 일하는 법 · 2026-09-22 → 10-20<span class="tag">대인관계력</span></div>
+      <p>2026년 9월 22일, 파이썬이 처음인 같은 조 동료 세 분과 반복문 하나를 붙잡았습니다. 그날 마무리 칸에는 세 분 모두 "파이썬 알려주셔서 감사해요"라고 적어 주셨습니다. 하지만 10월 2일에는 "잘 도와주는 방법을 모르겠다"고 적었습니다. 제 방식으로만 설명했기 때문입니다. 그 뒤로는 상대가 어디까지 아는지 먼저 묻고, 막힌 곳에서부터 시작했습니다. 10월 20일, 전날 조퇴한 동료는 "아침에 친절하게 알려주셔서 감사하다"는 말을 남겼습니다.</p>
+    </div>
+    <div class="scene">
+      <div class="scene-label">더 나아진 현재 · 2026-11-25<span class="tag">자기동기력</span></div>
+      <p>2026년 11월 25일, 대전의 시험장에서 AWS Solutions Architect Associate에 823점으로 합격했습니다. 전역 직후 제가 직접 정한 자격증 네 개 가운데 처음으로 최종 합격한 시험입니다. 리눅스마스터 2급 1차와 네트워크관리사 2급 필기도 10월 31일과 11월 1일에 넘었습니다. 집에서 볼 수도 있었지만, 2023년의 인터넷 끊김을 되풀이하지 않으려고 시험장을 직접 골랐습니다. 9월 8일 개강 뒤로는 늦은 날은 있어도 수업을 하루도 빠지지 않았습니다. 남이 정한 기준에 억울해하던 저는 이제 제가 세운 기준을 하나씩 통과하고 있습니다. 이번에는 준비된 채로, 데브옵스 엔지니어로서 다시 현장의 문을 두드립니다.</p>
     </div>
   </section>
 
-  <section id="strengths">
-    <h2>강점</h2>
+  <section id="numbers">
+    <h2>수치 — 13주 과정 기록 (2026-09-08 ~ 2026-11-26)</h2>
+<!-- AUTO:NUMBERS START -->
+<dl class="nums">
+  <div class="num"><dt>0일</dt><dd>빠진 수업일 (확정된 훈련일 53일 모두 출석, 지각 11회 포함)<span class="src">출처: 내 출석 기록 · 11-10, 11-17은 출석 화면에 접속 시간 기준 결석으로 표시되어 수기 출석부 기준(지각 출석)으로 정정, 화면 표시 출석률 88.9%</span></dd></div>
+  <div class="num"><dt>92.6%</dt><dd>출석률 (훈련일 54일 중 출석 50일, 지각·조퇴·외출 3회당 결석 1일로 계산하는 과정 규칙 적용)<span class="src">출처: 내 출석 기록 · 정정 반영</span></dd></div>
+  <div class="num"><dt>54일</dt><dd>아침 기록 54 · 마무리 기록 53 (2026-09-08 ~ 2026-11-26, 경과 12주 중 12주 기록)<span class="src">출처: 리추얼 기록</span></dd></div>
+  <div class="num"><dt>7 / 8</dt><dd>&#x27;못 했다&#x27;를 표시한 다음 기록일에 &#x27;실천했다&#x27;로 돌아온 횟수 (연속 &#x27;못 했다&#x27;는 최장 2일)<span class="src">출처: 리추얼 기록</span></dd></div>
+  <div class="num"><dt>41 / 53</dt><dd>마무리 기록 중 &#x27;실천했다&#x27; (일부 실천 4, 못 했다 8)<span class="src">출처: 리추얼 기록</span></dd></div>
+  <div class="num"><dt>25일</dt><dd>동료가 &#x27;꾸준함·출석&#x27;을 내 장점으로 적어 준 날<span class="src">출처: 리추얼 기록</span></dd></div>
+  <div class="num"><dt>11 / 11</dt><dd>과제 제출, 그중 최종 확인 완료 11건 (과제 1~11, 2026-09-11 ~ 2026-11-26)<span class="src">출처: 내 제출 현황</span></dd></div>
+</dl>
+<!-- AUTO:NUMBERS END -->
+    <p class="link-scene">위 이야기의 2026년 10월 7일 '못 했다'는 기록 속 '못 했다' 8번 가운데 하나입니다. 8번 중 7번은 바로 다음 기록일에 '실천했다'로 돌아왔고, '못 했다'가 이틀을 넘겨 이어진 적은 없습니다. <span class="src">출처: 리추얼 기록 (2026-10-07 마무리 · 2026-10-08 마무리)</span></p>
+    <h2 style="margin-top:40px">능력별 기록 — 내가 고른 문장</h2>
+<!-- AUTO:ABILITIES START -->
+<div class="abilities">
+  <h3>자기조절력</h3>
+  <p>2026-10-07 &#x27;못 했다&#x27;를 표시한 다음 날, 아침 강점 칸에 &quot;속상한 일이 있어도 금방 털고 다시 일어나는 것&quot;이라고 적고 그날 &#x27;실천했다&#x27;를 표시했습니다. <span class="src">근거: 리추얼 기록 2026-10-08 아침 · 오늘 지킬 강점·가치</span></p>
+  <p>2026-10-15 버스가 밀려 지각한 날, &quot;이미 늦은 건 어쩔 수 없고 같은 실수만 안 하면 된다&quot;고 적었습니다. <span class="src">근거: 리추얼 기록 2026-10-15 아침 · 그 결과·알게 된 점</span></p>
+  <h3>대인관계력</h3>
+  <p>2026-10-02 아침 기록에 &quot;옆자리 동료가 질문을 하면 친절하게 알려준다&quot;고 적었습니다. 같은 날 마무리에는 잘 돕는 방법을 아직 모르겠다고도 적었습니다. <span class="src">근거: 리추얼 기록 2026-10-02 아침 · 강점이 드러난 일화</span></p>
+  <h3>자기동기력</h3>
+  <p>2026-10-19 늦게 나온 날에도 &quot;포기하지 않고 끝까지 출석했다&quot;고 적었습니다. <span class="src">근거: 리추얼 기록 2026-10-19 아침 · 강점이 드러난 일화</span></p>
+  <p>2026-11-26 아침 기록에 &quot;꾸준히 시험을 준비해서 한 번에 높은 점수로 합격함&quot;이라고 적었습니다(전날 AWS SAA 823점 합격). <span class="src">근거: 리추얼 기록 2026-11-26 아침 · 강점이 드러난 일화</span></p>
+</div>
+<!-- AUTO:ABILITIES END -->
+  </section>
 
+  <section id="works">
+    <h2>대표작</h2>
     <div class="entry">
-      <div class="entry-title">차분함</div>
-      <p>예상 밖의 상황에서도 잘 흔들리지 않습니다. 게임을 할 때도 화를 내거나 불필요한 채팅을 치지 않고 끝까지 침착하게 진행하는 편이라, 리그 오브 레전드에서 명예 레벨 4를 유지하고 있고 정지를 받은 적도 없습니다.</p>
+      <div class="entry-title">4위 다음 판은 정말 무너지는가 — 과제 10 · AI와 함께 쓰는 첫 논문</div>
+      <div class="entry-period">2026-11-26 · 작혼 옥의 간 반장전 566판 기록과 마작 AI(Mortal) 리뷰 40판</div>
+      <p>"연패하면 냉정함을 잃는다"는 제 느낌을 제 대국 기록으로 검증했습니다. 결과를 보기 전에 분석 방법을 고정하고 순열검정·부트스트랩으로 비교한 결과, 4위 직후 판의 평균 순위(2.554)는 비교군(2.517)과 차이가 없어 가설은 지지되지 않았습니다. 실수하면 그 판에서 그만두는 제 습관이 결과에 끼어들었을 가능성도 함께 적었습니다.</p>
+      <p class="links"><a href="/works/paper.pdf" target="_blank" rel="noopener">논문 PDF 열기 (13쪽, 로그인 없음)</a></p>
     </div>
-
     <div class="entry">
-      <div class="entry-title">추진력</div>
-      <p>무엇을 할 때 우유부단해 하는 것을 답답해해서, 여러명이 의견을 정하지 못할 때면 먼저 해결책을 제시하고 행동합니다. 일단 해보고 실패할 땐 실패하더라도 그것을 통해 돈으로 살 수 없는 '경험'을 얻었다고 생각합니다. 한 번의 성공보다 여러 번 실패에서 얻을 수 있는 것이 더 많고 새로운 것에 도전하는 것을 즐깁니다.</p>
-    </div>
-
-    <div class="entry">
-      <div class="entry-title">운동신경</div>
-      <p>못하는 운동이 거의 없습니다. 리틀야구 선수 출신이고, 중학교 때는 배드민턴 대회에 학교 대표로 출전한 경험도 있습니다. 지금도 꾸준한 운동으로 건강한 신체를 유지하고 있습니다.</p>
+      <div class="entry-title">과제 13 · 앱</div>
+      <!-- 13번 과제를 마친 뒤 이 자리를 채웁니다 -->
+      <p class="placeholder">13번 과제를 마친 뒤 이 자리에 앱과 배포 주소를 올립니다. 예정일: 2026-12-17</p>
     </div>
   </section>
 
   <section id="experience">
     <h2>경험</h2>
-
+    <div class="entry">
+      <div class="entry-title">SKT ALEPH 국비교육 (AI 에이전트·보안)</div>
+      <div class="entry-period">2026.09.08 – 2026.12.11 (수료 예정)</div>
+      <ul>
+        <li>과제 1~11 제출 — 소개 페이지·게임·정보판·다이어리 앱(Vercel + Supabase)·패스키 인증·논문·자전 소설</li>
+        <li>과제마다 배포까지 마치는 것을 기준으로 삼음</li>
+        <li>수업일 결석 0일 (지각 11회 포함, 수기 출석부 기준)</li>
+      </ul>
+    </div>
     <div class="entry">
       <div class="entry-title">(주)큐피스트 — DevOps 엔지니어 (현장실습 및 수습)</div>
       <div class="entry-period">2022.07.17 – 2023.02.28 (약 7개월)</div>
@@ -245,13 +323,11 @@
         <li>그 외 AWS와 쿠버네티스 관련 인프라 서비스를 다룬 경험</li>
       </ul>
     </div>
-
     <div class="entry">
       <div class="entry-title">대덕소프트웨어마이스터고등학교</div>
       <div class="entry-period">2020.03 – 2023.01</div>
       <ul>
-        <li>백엔드 개발 공부</li>
-        <li>동아리 팀 프로젝트 진행</li>
+        <li>백엔드 개발 공부, 동아리 팀 프로젝트 진행</li>
       </ul>
     </div>
   </section>
@@ -259,18 +335,17 @@
   <section id="certs">
     <h2>자격증</h2>
     <ul class="certs">
+      <li><span>AWS Certified Solutions Architect – Associate (823점)</span><span class="date">2026.11</span></li>
+      <li><span>네트워크관리사 2급 필기 합격 (실기 접수)</span><span class="date">2026.11</span></li>
+      <li><span>리눅스마스터 2급 1차 합격 (2차 접수)</span><span class="date">2026.10</span></li>
       <li><span>SQLD (SQL 개발자)</span><span class="date">2021.10</span></li>
       <li><span>정보처리기능사</span><span class="date">2020.12</span></li>
     </ul>
   </section>
 
-  <section id="likes">
-    <h2>좋아하는 것</h2>
-    <p>독서, 애니메이션 - 최근에 본 것 : 면도날, 블리치</p>
-  </section>
-
   <section id="links" class="links">
     <h2>링크</h2>
+    <p><a href="mailto:kwakdh25@gmail.com">kwakdh25@gmail.com</a></p>
     <p><a href="https://github.com/domathang" target="_blank" rel="noopener">github.com/domathang</a></p>
   </section>
 
@@ -281,23 +356,9 @@
   </aside>
 
   <footer>
-    이 페이지에 담긴 내용은 모두 사실임을 곽도현이 보장합니다.
+    이 페이지에 담긴 내용은 모두 사실임을 곽도현이 보장합니다. 수치 섹션은 자동 갱신 프로그램(portfolio-updater)이 기록 파일에서 다시 만듭니다.
   </footer>
 
 </main>
-<script>
-  (function () {
-    var btn = document.getElementById('about-toggle');
-    var panel = document.getElementById('about-more');
-    if (!btn || !panel) return;
-    btn.addEventListener('click', function () {
-      var expanded = btn.getAttribute('aria-expanded') === 'true';
-      btn.setAttribute('aria-expanded', String(!expanded));
-      panel.setAttribute('aria-hidden', String(expanded));
-      panel.classList.toggle('open', !expanded);
-      btn.textContent = expanded ? '더 보기' : '접기';
-    });
-  })();
-</script>
 </body>
 </html>
